@@ -5,3 +5,12 @@ simple_test: |
   } or {
     i = 2;
   }
+another_test: |
+  public boolean String test;
+  maybe ("another_test") {
+    test = "one";
+  } or {
+    test = "two";
+  } or {
+    test = "three";
+  }
