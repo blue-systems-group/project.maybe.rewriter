@@ -1,0 +1,7 @@
+simple_test: |
+  int i;
+  maybe ("simple_test") {
+    i = 1;
+  } or {
+    i = 2;
+  }
