@@ -9,13 +9,7 @@ ASSIGNMENT_PATTERN = re.compile(r"""(?xum)
                                 [^,]+)\s*
                                 ;$""")
 
-JAVA_PRINT_PATTERN= re.compile(r'System.out.print.*;')
 
-C_PRINT_PATTERN = re.compile(r'printf,*;')
-
-SINGLE_LINE_COMMENTS_PATTERN= re.compile(r'\/\/.*') 
-
-MULTI_LINE_COMMENTS_PATTERN= re.compile(r'/\*.*\*/', re.DOTALL) 
 
 def assignment(content):
   labels = {}
@@ -41,3 +35,16 @@ def assignment(content):
   output = ASSIGNMENT_PATTERN.sub(replace_assignment, content)
   return output, labels
 
+
+MULTI_LINE_COMMENTS_PATTERN= re.compile(r"""(?s)/\*.*?(?:\*/|$)""") 
+SINGLE_LINE_COMMENTS_PATTERN= re.compile(r"""(?m)//.*$""") 
+
+SINGLE_QUOTE_STRING_PATTERN= re.compile(r"""'(?:\\'|[^'\n])*'""")
+DOUBLE_QUOTE_STRING_PATTERN= re.compile(r'"(?:\\"|[^"\n])*"')
+
+def is_block(string):
+  string = MULTI_LINE_COMMENTS_PATTERN.sub("", string)
+  string = SINGLE_LINE_COMMENTS_PATTERN.sub("", string)
+  string = SINGLE_QUOTE_STRING_PATTERN.sub("", string)
+  string = DOUBLE_QUOTE_STRING_PATTERN.sub("", string)
+  return string

@@ -16,22 +16,29 @@ def strip_whitespace(string):
   string = re.sub(r"""^\s+""", "", string)
   return re.sub(r"""\s+$""", "", string)
 
-class RegexTests(unittest.TestCase):
+
+class MaybeTests(unittest.TestCase):
   def setUp(self):
-		self.test_javaString = open(os.path.join(TESTING_INPUTS,
-			'javaString_doublequotes.java'), 'rU').read()
 		self.test_input = open(os.path.join(TESTING_INPUTS, 'maybe.java'), 'rU').read()
 		self.answers = yaml.load(open(os.path.join(TESTING_INPUTS, 'correct.yaml'), 'rU'))
 
-  def test_maybe_assignment(self):
+  def test_assignment(self):
     unused, labels = rewrite.assignment(self.test_input)
     for label, output in labels.items():
       output = strip_whitespace(output)
       answer = strip_whitespace(self.answers[strip_quotes(label)])
       self.assertEqual(output, answer)
 
-  def test_blocks(self):
-	  unused, labels = rewrite.block(self.test_javaString)
+
+class RegexTests(unittest.TestCase):
+  def setUp(self):
+		self.test_file = open(os.path.join(TESTING_INPUTS, 'block.java'), 'rU').read()
+		self.answers = yaml.load(open(os.path.join(TESTING_INPUTS, 'correct.yaml'), 'rU'))
+
+  def test_is_block(self):
+    string = rewrite.is_block(self.test_file).rstrip('\n')
+    answer = strip_whitespace(self.answers[strip_quotes('string_comments_test')])
+    self.assertEqual(string, answer)
 
 if __name__ == '__main__':
   unittest.main()
