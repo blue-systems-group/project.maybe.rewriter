@@ -9,6 +9,14 @@ ASSIGNMENT_PATTERN = re.compile(r"""(?xum)
                                 [^,]+)\s*
                                 ;$""")
 
+JAVA_PRINT_PATTERN= re.compile(r'System.out.print.*;')
+
+C_PRINT_PATTERN = re.compile(r'printf,*;')
+
+SINGLE_LINE_COMMENTS_PATTERN= re.compile(r'\/\/.*') 
+
+MULTI_LINE_COMMENTS_PATTERN= re.compile(r'/\*.*\*/', re.DOTALL) 
+
 def assignment(content):
   labels = {}
   def replace_assignment(match):
@@ -32,3 +40,4 @@ def assignment(content):
   
   output = ASSIGNMENT_PATTERN.sub(replace_assignment, content)
   return output, labels
+
