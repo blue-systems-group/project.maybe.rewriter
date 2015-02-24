@@ -53,21 +53,41 @@ def is_block(string):
   return (string.count("{") - string.count("}") == 0)
 
 BLOCK_START_PATTERN = re.compile(r"""^(?m)(?P<indent>[^\S\n]*)maybe\s*\((?P<label>.+?)\)\s*{""")
+ALTERNATIVE_START_PATTERN = re.compile(r"""^\s*or\s*{""")
 
 class MaybeBlock(object):
   def __init__(self, match):
     self.start = match.start()
+    self.end = None
     self.alternatives = []
 
 def block(content):
   blocks = []
   for match in BLOCK_START_PATTERN.finditer(content):
     maybe_block = MaybeBlock(match)
+    buffer_start = match.end() - 1
 
-    buffer_start = match.end() - 1    
-    search_start = buffer_start
     while True:
-      buffer_end = content[search_start:].find("}")
-      print "Here"
-      print content[buffer_start:buffer_start + buffer_end + 1]
-      break
+      buffer_end = buffer_start
+      search_start = buffer_start
+      
+      while True:
+        buffer_increment = content[search_start:].find("}")
+        assert buffer_increment != -1, "Unmatched braces."
+        buffer_end += buffer_increment + 1
+        block_buffer = content[buffer_start:buffer_end + 1]
+        if is_block(block_buffer):
+          maybe_block.alternatives.append(block_buffer[1:-1])
+          break
+        else:
+          search_start += buffer_increment + 1
+      or_match = ALTERNATIVE_START_PATTERN.match(content[buffer_end:])
+      if or_match != None:
+        buffer_start = buffer_end + or_match.end() - 1
+      else:
+        break
+    maybe_block.end = buffer_end
+    print content[maybe_block.start:maybe_block.end]
+    blocks.append(maybe_block)
+
+  return blocks
