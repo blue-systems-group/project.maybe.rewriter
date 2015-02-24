@@ -36,8 +36,8 @@ class RegexTests(unittest.TestCase):
 		self.test_file = open(os.path.join(TESTING_INPUTS, 'block.java'), 'rU').read()
 		self.answers = yaml.load(open(os.path.join(TESTING_INPUTS, 'correct.yaml'), 'rU'))
 
-  def test_is_block(self):
-    string = rewrite.is_block(self.test_file).rstrip('\n')
+  def test_clean_block(self):
+    string = rewrite.clean_block(self.test_file).rstrip('\n')
     self.assertEqual(strip_whitespace(string), self.answers['is_block_test'])
 
 if __name__ == '__main__':

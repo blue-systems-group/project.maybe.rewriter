@@ -42,21 +42,32 @@ SINGLE_LINE_COMMENTS_PATTERN= re.compile(r"""(?m)//.*$""")
 SINGLE_QUOTE_STRING_PATTERN= re.compile(r"""'(?:\\'|[^'\n])*'""")
 DOUBLE_QUOTE_STRING_PATTERN= re.compile(r'"(?:\\"|[^"\n])*"')
 
-def is_block(string):
+def clean_block(string):
   string = MULTI_LINE_COMMENTS_PATTERN.sub("", string)
   string = SINGLE_LINE_COMMENTS_PATTERN.sub("", string)
   string = SINGLE_QUOTE_STRING_PATTERN.sub("", string)
   string = DOUBLE_QUOTE_STRING_PATTERN.sub("", string)
   return string
 
+def is_block(string):
+  return (string.count("{") - string.count("}") == 0)
+
 BLOCK_START_PATTERN = re.compile(r"""^(?m)(?P<indent>[^\S\n]*)maybe\s*\((?P<label>.+?)\)\s*{""")
 
 class MaybeBlock(object):
   def __init__(self, match):
-    self.start = match.start
+    self.start = match.start()
     self.alternatives = []
 
 def block(content):
-  maybe_blocks = [MaybeBlock(match) for match in BLOCK_START_PATTERN.finditer(content)]
-  return maybe_blocks
+  blocks = []
+  for match in BLOCK_START_PATTERN.finditer(content):
+    maybe_block = MaybeBlock(match)
 
+    buffer_start = match.end() - 1    
+    search_start = buffer_start
+    while True:
+      buffer_end = content[search_start:].find("}")
+      print "Here"
+      print content[buffer_start:buffer_start + buffer_end + 1]
+      break
