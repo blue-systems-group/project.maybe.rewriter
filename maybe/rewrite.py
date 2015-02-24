@@ -6,7 +6,7 @@ ASSIGNMENT_PATTERN = re.compile(r"""(?xum)
                                 =\s*maybe\s*
                                 \((?P<label>.+?)\)
                                 (?P<alternatives>(?:[^,;]+,)+\s*
-                                [^,]+)\s*
+                                [^,\n]+)\s*?
                                 ;$""")
 
 
@@ -48,3 +48,15 @@ def is_block(string):
   string = SINGLE_QUOTE_STRING_PATTERN.sub("", string)
   string = DOUBLE_QUOTE_STRING_PATTERN.sub("", string)
   return string
+
+BLOCK_START_PATTERN = re.compile(r"""^(?m)(?P<indent>[^\S\n]*)maybe\s*\((?P<label>.+?)\)\s*{""")
+
+class MaybeBlock(object):
+  def __init__(self, match):
+    self.start = match.start
+    self.alternatives = []
+
+def block(content):
+  maybe_blocks = [MaybeBlock(match) for match in BLOCK_START_PATTERN.finditer(content)]
+  return maybe_blocks
+

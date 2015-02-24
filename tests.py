@@ -27,6 +27,10 @@ class MaybeTests(unittest.TestCase):
       answer = strip_whitespace(self.answers[strip_quotes(label)])
       self.assertEqual(output, answer)
 
+  def test_block(self):
+    blocks = rewrite.block(self.test_input)
+    self.assertEqual(len(blocks), 1)
+
 class RegexTests(unittest.TestCase):
   def setUp(self):
 		self.test_file = open(os.path.join(TESTING_INPUTS, 'block.java'), 'rU').read()
