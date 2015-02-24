@@ -13,9 +13,7 @@ def strip_quotes(string):
     return m.group('unquoted')
 
 def strip_whitespace(string):
-  string = re.sub(r"""^\s+""", "", string)
-  return re.sub(r"""\s+$""", "", string)
-
+  return re.sub(r"""\s+""", "", string)
 
 class MaybeTests(unittest.TestCase):
   def setUp(self):
@@ -29,7 +27,6 @@ class MaybeTests(unittest.TestCase):
       answer = strip_whitespace(self.answers[strip_quotes(label)])
       self.assertEqual(output, answer)
 
-
 class RegexTests(unittest.TestCase):
   def setUp(self):
 		self.test_file = open(os.path.join(TESTING_INPUTS, 'block.java'), 'rU').read()
@@ -37,8 +34,7 @@ class RegexTests(unittest.TestCase):
 
   def test_is_block(self):
     string = rewrite.is_block(self.test_file).rstrip('\n')
-    answer = strip_whitespace(self.answers[strip_quotes('string_comments_test')])
-    self.assertEqual(string, answer)
+    self.assertEqual(strip_whitespace(string), self.answers['is_block_test'])
 
 if __name__ == '__main__':
   unittest.main()
