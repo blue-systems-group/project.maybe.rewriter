@@ -1,7 +1,8 @@
 import re
 
 class MaybeAlternative(object):
-  def __init__(self, start, end, content):
+  def __init__(self, value, start, end, content):
+    self.value = value
     self.start = start
     self.end = end
     self.content = content
@@ -13,7 +14,7 @@ class MaybeStatement(object):
   ASSIGNMENT = "assignment"
   BLOCK = "block"
 
-  def __init__(self, maybe_type, start, label, end=None):
+  def __init__(self, maybe_type, start, label, end=None, variable=None):
     self.maybe_type = maybe_type
     self.start = start
     self.end = end
@@ -44,13 +45,16 @@ ASSIGNMENT_PATTERN = re.compile(r"""(?xum)
 
 def record_assignments(content, statements={}):
   def record_assignment(match):
-    maybe_statement = MaybeStatement(MaybeStatement.ASSIGNMENT, match.start(), match.group('label').strip(), match.end())
+    maybe_statement = MaybeStatement(MaybeStatement.ASSIGNMENT, match.start(), match.group('label').strip(), match.end(), match.group('variable').rstrip())
     assert not statements.has_key(maybe_statement.label)
     alternative_start = match.start('alternatives')
-    for alternative in match.group('alternatives').split(','):
+    for value, alternative in enumerate(match.group('alternatives').split(',')):
       alternative_content = alternative.strip()
       alternative_start += len(alternative) - len(alternative.lstrip())
-      maybe_alternative = MaybeAlternative(alternative_start, alternative_start + len(alternative_content), alternative_content)
+      maybe_alternative = MaybeAlternative(value,
+                                           alternative_start,
+                                           alternative_start + len(alternative_content),
+                                           alternative_content)
       maybe_statement.alternatives.append(maybe_alternative)
       alternative_start += len(alternative.lstrip()) + 1
     statements[maybe_statement.label] = maybe_statement
@@ -104,7 +108,8 @@ def is_block(string):
 def match_to_block(match, content):
   maybe_block = MaybeStatement(MaybeStatement.BLOCK, match.start(), match.group('label').strip())
   buffer_start = match.end() - 1
-
+  
+  value = 0
   while True:
     buffer_end = buffer_start
     search_start = buffer_start
@@ -115,9 +120,11 @@ def match_to_block(match, content):
       buffer_end += buffer_increment + 1
       block_buffer = content[buffer_start:buffer_end + 1]
       if is_block(clean_block(block_buffer)):
-        maybe_block.alternatives.append(MaybeAlternative(buffer_start + 1,
+        maybe_block.alternatives.append(MaybeAlternative(value,
+                                                         buffer_start + 1,
                                                          buffer_end,
                                                          block_buffer[1:-1]))
+        value += 1
         break
       else:
         search_start += buffer_increment + 1
