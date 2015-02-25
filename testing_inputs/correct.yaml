@@ -1,17 +1,24 @@
-simple_test: |
-  int i;
-  maybe ("simple_test") {
-    i = 1;
-  } or {
-    i = 2;
-  }
-another_test: |
-  public String test;
-  maybe ("another_test") {
-    test = "one";
-  } or {
-    test = "two";
-  } or {
-    test = "three";
-  }
+simple_test:
+  variable: "int i"
+  label: "simple_test"
+  alternatives:
+    - 1
+    - 2
+  output: |
+    int i;
+    maybe ("simple_test") {
+      i = 1;
+    } or {
+      i = 2;
+    }
+another_test:
+  output: |
+    public String test;
+    maybe ("another_test") {
+      test = "one";
+    } or {
+      test = "two";
+    } or {
+      test = "three";
+    }
 is_block_test: 0123456789012345

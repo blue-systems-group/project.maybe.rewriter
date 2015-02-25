@@ -18,6 +18,7 @@ def strip_whitespace(string):
 class RecordTests(unittest.TestCase):
   def setUp(self):
 		self.test_input = open(os.path.join(TESTING_INPUTS, 'maybe.java'), 'rU').read()
+		self.answers = yaml.load(open(os.path.join(TESTING_INPUTS, 'correct.yaml'), 'rU'))
   
   def test_record_assignments(self):
     statements = rewrite.record_assignments(self.test_input)
@@ -38,7 +39,7 @@ class ReplaceTests(unittest.TestCase):
     unused, labels = rewrite.replace_assignments(self.test_input)
     for label, output in labels.items():
       output = strip_whitespace(output)
-      answer = strip_whitespace(self.answers[strip_quotes(label)])
+      answer = strip_whitespace(self.answers[strip_quotes(label)]['output'])
       self.assertEqual(output, answer)
 
   @unittest.skip("")
@@ -46,14 +47,13 @@ class ReplaceTests(unittest.TestCase):
     blocks = rewrite.block(self.test_input)
     self.assertEqual(len(blocks), 1)
 
-@unittest.skip("")
 class RegexTests(unittest.TestCase):
   def setUp(self):
 		self.test_file = open(os.path.join(TESTING_INPUTS, 'block.java'), 'rU').read()
 		self.answers = yaml.load(open(os.path.join(TESTING_INPUTS, 'correct.yaml'), 'rU'))
 
-  def test_clean_block(self):
-    string = rewrite.clean_block(self.test_file).rstrip('\n')
+  def test_remove_comments_and_strings(self):
+    string = rewrite.remove_comments_and_strings(self.test_file).rstrip('\n')
     self.assertEqual(strip_whitespace(string), self.answers['is_block_test'])
 
 if __name__ == '__main__':
