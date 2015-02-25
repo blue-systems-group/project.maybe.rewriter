@@ -1,23 +1,74 @@
 import re
 
+class MaybeAlternative(object):
+  def __init__(self, start, end, content):
+    self.start = start
+    self.end = end
+    self.content = content
+
+  def __repr__(self):
+    return "[{start}:{end} {content}]".format(start=self.start, end=self.end, content=self.content)
+
+class MaybeStatement(object):
+  ASSIGNMENT = "assignment"
+  BLOCK = "block"
+
+  def __init__(self, maybe_type, start, end, label):
+    self.maybe_type = maybe_type
+    self.start = start
+    self.end = end
+    self.label = label
+    self.alternatives = []
+
+  def __repr__(self):
+    return "\{{maybe_type} {start}:{end} {label}\}".format(maybe_type=self.maybe_type,
+                                                           start=self.start, end=self.end,
+                                                           label=self.label)
+
+  @property
+  def is_assignment(self):
+    return self.maybe_type == MaybeStatement.ASSIGNMENT
+
+  @property
+  def is_block(self):
+    return self.maybe_type == MaybeStatement.BLOCK
+
 ASSIGNMENT_PATTERN = re.compile(r"""(?xum)
                                 ^(?P<indent>[^\S\n]*)
                                 (?P<variable>.*?)
                                 =\s*maybe\s*
-                                \((?P<label>.+?)\)
+                                \((?P<label>.+?)\)\s*
                                 (?P<alternatives>(?:[^,;]+,)+\s*
                                 [^,\n]+)\s*?
                                 ;$""")
 
+def record_assignments(content, statements={}):
+  def record_assignment(match):
+    maybe_statement = MaybeStatement(MaybeStatement.ASSIGNMENT, match.start(), match.end(), match.group('label').strip())
+    assert not statements.has_key(maybe_statement.label)
+    alternative_start = match.start('alternatives')
+    for alternative in match.group('alternatives').split(','):
+      alternative_content = alternative.strip()
+      alternative_start += len(alternative) - len(alternative.lstrip())
+      maybe_alternative = MaybeAlternative(alternative_start, alternative_start + len(alternative_content), alternative_content)
+      maybe_statement.alternatives.append(maybe_alternative)
+      alternative_start += len(alternative.lstrip()) + 1
+    statements[maybe_statement.label] = maybe_statement
+  
+  for match in ASSIGNMENT_PATTERN.finditer(content):
+    record_assignment(match)
 
+  return statements
 
-def assignment(content):
+def replace_assignments(content):
   labels = {}
   def replace_assignment(match):
+    label = match.group('label').strip()
+    assert not labels.has_key(label)
     indent = match.group('indent')
+    variable = match.group('variable').rstrip()
     separator = "\n{indent}}} or {{\n".format(indent=indent)
     name = re.split(r"""\s+""", match.group('variable').strip())[-1]
-    label = match.group('label').strip()
     inner = separator.join(["{indent}  {name} = {a};".format(indent=indent, name=name, a=a.strip()) for a in match.group('alternatives').split(',')])
     replacement =  """
 {indent}{variable};
@@ -25,16 +76,14 @@ def assignment(content):
 {inner}
 {indent}}}
 """.format(indent=indent,
-           variable=match.group('variable').rstrip(),
+           variable=variable,
            label=label,
            inner=inner)
-    assert not labels.has_key(label)
     labels[label] = replacement
     return replacement
   
   output = ASSIGNMENT_PATTERN.sub(replace_assignment, content)
   return output, labels
-
 
 MULTI_LINE_COMMENTS_PATTERN= re.compile(r"""(?s)/\*.*?(?:\*/|$)""") 
 SINGLE_LINE_COMMENTS_PATTERN= re.compile(r"""(?m)//.*$""") 
@@ -54,12 +103,6 @@ def is_block(string):
 
 BLOCK_START_PATTERN = re.compile(r"""^(?m)(?P<indent>[^\S\n]*)maybe\s*\((?P<label>.+?)\)\s*{""")
 ALTERNATIVE_START_PATTERN = re.compile(r"""^\s*or\s*{""")
-
-class MaybeBlock(object):
-  def __init__(self, match):
-    self.start = match.start()
-    self.end = None
-    self.alternatives = []
 
 def block(content):
   blocks = []

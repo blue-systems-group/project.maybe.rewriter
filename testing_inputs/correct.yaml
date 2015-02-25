@@ -6,7 +6,7 @@ simple_test: |
     i = 2;
   }
 another_test: |
-  public boolean String test;
+  public String test;
   maybe ("another_test") {
     test = "one";
   } or {

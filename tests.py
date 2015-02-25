@@ -15,22 +15,32 @@ def strip_quotes(string):
 def strip_whitespace(string):
   return re.sub(r"""\s+""", "", string)
 
-class MaybeTests(unittest.TestCase):
+class RecordTests(unittest.TestCase):
+  def setUp(self):
+		self.test_input = open(os.path.join(TESTING_INPUTS, 'maybe.java'), 'rU').read()
+  
+  def test_record_assignments(self):
+    statements = rewrite.record_assignments(self.test_input)
+    self.assertEqual(len(statements), 2)
+
+class ReplaceTests(unittest.TestCase):
   def setUp(self):
 		self.test_input = open(os.path.join(TESTING_INPUTS, 'maybe.java'), 'rU').read()
 		self.answers = yaml.load(open(os.path.join(TESTING_INPUTS, 'correct.yaml'), 'rU'))
 
-  def test_assignment(self):
-    unused, labels = rewrite.assignment(self.test_input)
+  def test_replace_assignment(self):
+    unused, labels = rewrite.replace_assignments(self.test_input)
     for label, output in labels.items():
       output = strip_whitespace(output)
       answer = strip_whitespace(self.answers[strip_quotes(label)])
       self.assertEqual(output, answer)
 
+  @unittest.skip("")
   def test_block(self):
     blocks = rewrite.block(self.test_input)
     self.assertEqual(len(blocks), 1)
 
+@unittest.skip("")
 class RegexTests(unittest.TestCase):
   def setUp(self):
 		self.test_file = open(os.path.join(TESTING_INPUTS, 'block.java'), 'rU').read()
