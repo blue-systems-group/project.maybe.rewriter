@@ -5,13 +5,6 @@ from maybe import rewrite
 
 TESTING_INPUTS = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'testing_inputs')
 
-def strip_quotes(string):
-  m = re.match(r"""^"(?P<unquoted>.*?)"$""", string)
-  if not m:
-    return string
-  else:
-    return m.group('unquoted')
-
 def strip_whitespace(string):
   return re.sub(r"""\s+""", "", string)
 
@@ -24,6 +17,8 @@ class RecordTests(unittest.TestCase):
     statements = rewrite.record_assignments(self.test_input)
     self.assertEqual(len(statements), 2)
     self.assertEqual(len([s for s in statements.values() if s.is_assignment]), 2)
+    for label, statement in statements.items():
+      self.assertEqual(statement.label, self.answers[label]['label'])
 
   def test_record_blocks(self):
     statements = rewrite.record_blocks(self.test_input)
@@ -38,8 +33,9 @@ class ReplaceTests(unittest.TestCase):
   def test_replace_assignment(self):
     unused, labels = rewrite.replace_assignments(self.test_input)
     for label, output in labels.items():
+      label = eval(label)
       output = strip_whitespace(output)
-      answer = strip_whitespace(self.answers[strip_quotes(label)]['output'])
+      answer = strip_whitespace(self.answers[label]['output'])
       self.assertEqual(output, answer)
 
   @unittest.skip("")

@@ -1,5 +1,4 @@
 simple_test:
-  variable: "int i"
   label: "simple_test"
   alternatives:
     - 1
@@ -12,6 +11,7 @@ simple_test:
       i = 2;
     }
 another_test:
+  label: "another_test"
   output: |
     public String test;
     maybe ("another_test") {
