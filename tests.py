@@ -22,6 +22,12 @@ class RecordTests(unittest.TestCase):
   def test_record_assignments(self):
     statements = rewrite.record_assignments(self.test_input)
     self.assertEqual(len(statements), 2)
+    self.assertEqual(len([s for s in statements.values() if s.is_assignment]), 2)
+
+  def test_record_blocks(self):
+    statements = rewrite.record_blocks(self.test_input)
+    self.assertEqual(len(statements), 2)
+    self.assertEqual(len([s for s in statements.values() if s.is_block]), 2)
 
 class ReplaceTests(unittest.TestCase):
   def setUp(self):

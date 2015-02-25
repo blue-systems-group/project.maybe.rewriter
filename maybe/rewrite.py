@@ -13,7 +13,7 @@ class MaybeStatement(object):
   ASSIGNMENT = "assignment"
   BLOCK = "block"
 
-  def __init__(self, maybe_type, start, end, label):
+  def __init__(self, maybe_type, start, label, end=None):
     self.maybe_type = maybe_type
     self.start = start
     self.end = end
@@ -44,7 +44,7 @@ ASSIGNMENT_PATTERN = re.compile(r"""(?xum)
 
 def record_assignments(content, statements={}):
   def record_assignment(match):
-    maybe_statement = MaybeStatement(MaybeStatement.ASSIGNMENT, match.start(), match.end(), match.group('label').strip())
+    maybe_statement = MaybeStatement(MaybeStatement.ASSIGNMENT, match.start(), match.group('label').strip(), match.end())
     assert not statements.has_key(maybe_statement.label)
     alternative_start = match.start('alternatives')
     for alternative in match.group('alternatives').split(','):
@@ -101,36 +101,40 @@ def clean_block(string):
 def is_block(string):
   return (string.count("{") - string.count("}") == 0)
 
+def match_to_block(match, content):
+  maybe_block = MaybeStatement(MaybeStatement.BLOCK, match.start(), match.group('label').strip())
+  buffer_start = match.end() - 1
+
+  while True:
+    buffer_end = buffer_start
+    search_start = buffer_start
+    
+    while True:
+      buffer_increment = content[search_start:].find("}")
+      assert buffer_increment != -1, "Unmatched braces."
+      buffer_end += buffer_increment + 1
+      block_buffer = content[buffer_start:buffer_end + 1]
+      if is_block(clean_block(block_buffer)):
+        maybe_block.alternatives.append(MaybeAlternative(buffer_start + 1,
+                                                         buffer_end,
+                                                         block_buffer[1:-1]))
+        break
+      else:
+        search_start += buffer_increment + 1
+    or_match = ALTERNATIVE_START_PATTERN.match(content[buffer_end:])
+    if or_match != None:
+      buffer_start = buffer_end + or_match.end() - 1
+    else:
+      break
+  maybe_block.end = buffer_end
+  return maybe_block
+
 BLOCK_START_PATTERN = re.compile(r"""^(?m)(?P<indent>[^\S\n]*)maybe\s*\((?P<label>.+?)\)\s*{""")
 ALTERNATIVE_START_PATTERN = re.compile(r"""^\s*or\s*{""")
 
-def block(content):
-  blocks = []
+def record_blocks(content, statements={}):
   for match in BLOCK_START_PATTERN.finditer(content):
-    maybe_block = MaybeBlock(match)
-    buffer_start = match.end() - 1
-
-    while True:
-      buffer_end = buffer_start
-      search_start = buffer_start
-      
-      while True:
-        buffer_increment = content[search_start:].find("}")
-        assert buffer_increment != -1, "Unmatched braces."
-        buffer_end += buffer_increment + 1
-        block_buffer = content[buffer_start:buffer_end + 1]
-        if is_block(block_buffer):
-          maybe_block.alternatives.append(block_buffer[1:-1])
-          break
-        else:
-          search_start += buffer_increment + 1
-      or_match = ALTERNATIVE_START_PATTERN.match(content[buffer_end:])
-      if or_match != None:
-        buffer_start = buffer_end + or_match.end() - 1
-      else:
-        break
-    maybe_block.end = buffer_end
-    print content[maybe_block.start:maybe_block.end]
-    blocks.append(maybe_block)
-
-  return blocks
+    maybe_block = match_to_block(match, content)
+    assert not statements.has_key(maybe_block.label)
+    statements[maybe_block.label] = maybe_block
+  return statements
