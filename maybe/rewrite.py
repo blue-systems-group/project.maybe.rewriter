@@ -16,7 +16,6 @@ class MaybeAlternative(object):
   @property
   def as_dict(self):
     return {'value': self.value,
-            'offset': self.offset,
             'start': self.start,
             'end': self.end,
             'content': self.content}
@@ -58,17 +57,19 @@ def remove_comments_and_strings(string):
   MULTI_LINE_COMMENTS_PATTERN= re.compile(r"""(?s)/\*.*?\*/""") 
   SINGLE_LINE_COMMENTS_PATTERN= re.compile(r"""(?m)//.*$""") 
 
-  SINGLE_QUOTE_STRING_PATTERN= re.compile(r"""'(?P<quoted>\\'|[^'\n])*?'""")
-  DOUBLE_QUOTE_STRING_PATTERN= re.compile(r'"(?P<quoted>\\"|[^"\n])*?"')
+  SINGLE_QUOTE_STRING_PATTERN= re.compile(r"""'(?P<quoted>(?:\\'|[^'\n])*?)'""")
+  DOUBLE_QUOTE_STRING_PATTERN= re.compile(r'"(?P<quoted>(?:\\"|[^"\n])*?)"')
   
   def equivalent_whitespace(match):
     return " " * len(match.group())
 
   def single_quotes(match):
-    return "'%s'" % (" "* len(match.group('quoted')),)
+    assert len(match.group()) == (len(match.group('quoted')) + 2), "Length mismatch: %d %d" % (len(match.group()), len(match.group('quoted')))
+    return "'%s'" % (" " * len(match.group('quoted')),)
   
   def double_quotes(match):
-    return '"%s"' % (" "* len(match.group('quoted')),)
+    assert len(match.group()) == (len(match.group('quoted')) + 2), "Length mismatch: %d %d" % (len(match.group()), len(match.group('quoted')))
+    return '"%s"' % (" " * len(match.group('quoted')),)
   
   initial_length = len(string)
 
@@ -99,7 +100,6 @@ def record_assignments(content, statements=None):
   if not statements:
     statements = {}
   cleaned_content = remove_comments_and_strings(content)
-  print cleaned_content
   
   def record_assignment(match):
     label = eval(content[match.start('label'):match.end('label')].strip())
