@@ -22,6 +22,7 @@ class RecordTests(unittest.TestCase):
     for label, statement in statements.items():
       self.assertEqual(statement.label, self.answers[label]['label'])
       self.assertEqual(len(statement.alternatives), len(self.answers[label]['alternatives']))
+      self.assertEqual(statement.line, self.answers[label]['line'])
       for q,a in zip(statement.alternatives, self.answers[label]['alternatives']):
         self.assertEqual(str(q.content), str(a["content"]))
         self.assertEqual(q.start, a['start'])

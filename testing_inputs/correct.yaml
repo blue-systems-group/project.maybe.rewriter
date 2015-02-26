@@ -1,5 +1,6 @@
 "simple test":
   label: "simple test"
+  line: 5
   alternatives:
     -
       content: 1
@@ -18,6 +19,7 @@
     }
 "another test":
   label: "another test"
+  line: 6
   alternatives:
     - 
       content: "\"one\""
