@@ -2,8 +2,8 @@ package testing_inputs.maybe;
 
 // 26 Feb 2015 : GWA : These should work.
 
-int i = maybe("simple_test") 1, 2;
-public String test = maybe("another_test") "one","two",   "three";
+int i = maybe("simple test") 1, 2;
+public String test = maybe("another test") "one","two",   "three";
 
 // 26 Feb 2015 : GWA : These should fail because they are inside comments or
 // strings.
@@ -17,7 +17,7 @@ public String test = "maybe (\"again_no\") true, false";
 
 private String another_test = 'maybe (\'please_no\') true, false';
 
-maybe ("block_test") {
+maybe ("block test") {
   if ("true") {
     i = 0;
   } else {
@@ -27,7 +27,7 @@ maybe ("block_test") {
   i = 1;
 } or {
   j = 2;
-  maybe ("another test") {
+  maybe ("another block test") {
     j = 3;
   }
 }

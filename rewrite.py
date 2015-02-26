@@ -124,7 +124,7 @@ def record_assignments(content, statements=None):
 
   return statements
 
-def replace_assignments(content, standard_indent="\t"):
+def replace_assignments(content, standard_indent="  "):
   def replace_assignment(match, content, labels):
     label = eval(content[match.start('label'):match.end('label')].strip())
     assert not labels.has_key(label)
@@ -138,9 +138,10 @@ def replace_assignments(content, standard_indent="\t"):
                                              variable=variable,
                                              label=label,
                                              inner=inner)
-    indented_replacement = ""
+    indented_replacement = []
     for line in replacement.splitlines():
-      indented_replacement += indent + line
+      indented_replacement.append(indent + line)
+    indented_replacement = "\n".join(indented_replacement)
     replacement = indented_replacement
     labels[label] = replacement
     return content[:match.start()] + replacement + content[match.end():]
@@ -173,7 +174,7 @@ def match_to_block(match, content):
       buffer_increment = content[search_start:].find("}")
       assert buffer_increment != -1, "Unmatched braces."
       buffer_end += buffer_increment + 1
-      block_buffer = content[buffer_start:buffer_end + 1]
+      block_buffer = content[buffer_start:buffer_end]
       if is_block(block_buffer):
         maybe_block.alternatives.append(MaybeAlternative(value,
                                                          maybe_block.start,
@@ -207,9 +208,7 @@ switch ({name}) {{
 }}
 """
 JAVA_BLOCK_ALTERNATIVE_TEMPLATE = """
-case {value}: {{
-{contents}
-{stdindent}break;
+case {value}: {{{contents}{indent}break;
 }}
 """
 
@@ -224,7 +223,7 @@ def record_blocks(content, statements=None):
     statements[maybe_block.label] = maybe_block
   return statements
 
-def replace_blocks(content, standard_indent="\t"):
+def replace_blocks(content, standard_indent="  "):
   labels = {}
   
   while True:
@@ -236,18 +235,26 @@ def replace_blocks(content, standard_indent="\t"):
       name = "__{slug}__{nonce}".format(slug=re.sub("[^A-Za-z0-9]", "_", maybe_block.label),
                                         nonce=random.randint(0,1024))
       inner = ""
+      alternative_indent = re.match("^\s*", maybe_block.alternatives[0].content).group()
       for alternative in maybe_block.alternatives:
-        contents = ""
-        for line in alternative.content.splitlines():
-          contents += standard_indent + line
-        inner += JAVA_BLOCK_ALTERNATIVE_TEMPLATE.format(value=alternative.value,
-                                                        contents=contents,
-                                                        stdindent=standard_indent)
+        unindented_inner = JAVA_BLOCK_ALTERNATIVE_TEMPLATE.format(value=alternative.value,
+                                                                  contents=alternative.content.rstrip(),
+                                                                  indent=alternative_indent,
+                                                                  stdindent=standard_indent)
+        indented_inner = []
+        for line in unindented_inner.splitlines():
+          indented_inner.append(standard_indent + line)
+        indented_inner = "\n".join(indented_inner)
+        inner += indented_inner
       replacement = JAVA_BLOCK_TEMPLATE.format(name=name, stdindent=standard_indent,
                                                label=maybe_block.label,
                                                inner=inner)
-      labels[maybe_block.label] = replacement
-      content = content[:block_match.start()] + replacement + content[block_match.end():]
+      indented_replacement = []
+      for line in replacement.splitlines():
+        indented_replacement.append(block_match.group('indent') + line)
+      indented_replacement = "\n".join(indented_replacement)
+      labels[maybe_block.label] = indented_replacement
+      content = content[:maybe_block.start] + indented_replacement + content[maybe_block.end:]
     else:
       break
 
@@ -271,18 +278,28 @@ if __name__=='__main__':
   parser = argparse.ArgumentParser(description='Rewrite maybe statements.')
   parser.add_argument('input_file', type=str,
                       help="Input file to rewrite.")
-  parser.add_argument('--metadata', action='store_true',
+  parser.add_argument('--no_metadata', action='store_true', default=False,
+                      help="Don't dump metadata.")
+  parser.add_argument('--only_metadata', action='store_true',
                       help="Dump metadata to standard output and exit.")
   args = parser.parse_args()
   basename, ext = os.path.splitext(args.input_file)
   assert ext == '.java', "Input must be a Java file: %s" % (ext,)
   content = open(args.input_file, 'rU').read()
 
-  statements = record_assignments(content)
-  statements = record_blocks(content, statements)
+  if not args.no_metadata:
+    statements = record_assignments(content)
+    statements = record_blocks(content, statements)
+    
+    if not args.only_metadata:
+      f = open(os.path.join(basename, '.maybe'), 'wb')
+    else:
+      f = sys.stdout
+    print >>f, dump_statements(content, statements)
+    if args.only_metadata:
+      sys.exit()
   
-  if not args.metadata:
-    f = open(os.path.join(basename, '.maybe'), 'wb')
-  else:
-    f = sys.stdout
-  print >>f, dump_statements(content, statements)
+  content, unused = replace_assignments(content)
+  content, unused = replace_blocks(content)
+
+  print content
