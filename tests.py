@@ -21,6 +21,7 @@ class RecordTests(unittest.TestCase):
     self.assertEqual(len([s for s in statements.values() if s.is_assignment]), 2)
     for label, statement in statements.items():
       self.assertEqual(statement.label, self.answers[label]['label'])
+      self.assertEqual(len(statement.alternatives), len(self.answers[label]['alternatives']))
 
   def test_record_blocks(self):
     statements = rewrite.record_blocks(self.test_input)

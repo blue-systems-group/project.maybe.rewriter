@@ -1,20 +1,24 @@
-simple_test:
-  label: "simple_test"
+"simple test":
+  label: "simple test"
   alternatives:
     - 1
     - 2
   output: |
     int i;
-    maybe ("simple_test") {
+    maybe ("simple test") {
       i = 1;
     } or {
       i = 2;
     }
-another_test:
-  label: "another_test"
+"another test":
+  label: "another test"
+  alternatives:
+    - "one"
+    - "two"
+    - "three"
   output: |
     public String test;
-    maybe ("another_test") {
+    maybe ("another test") {
       test = "one";
     } or {
       test = "two";
