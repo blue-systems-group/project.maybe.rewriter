@@ -107,7 +107,8 @@ def record_assignments(content, statements=None):
     maybe_statement.content = content[match.start():match.end()]
     assert not statements.has_key(maybe_statement.label)
     alternative_start = match.start('alternatives')
-    for value, alternative in enumerate(match.group('alternatives').split(',')):
+    alternatives = content[match.start('alternatives'):match.end('alternatives')]
+    for value, alternative in enumerate(alternatives.split(',')):
       alternative_content = alternative.strip()
       alternative_start += len(alternative) - len(alternative.lstrip())
       maybe_alternative = MaybeAlternative(value,
