@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import re,unittest,os,yaml,rewrite
+import re,unittest,os,yaml,rewrite,json
 
 TESTING_INPUTS = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'testing_inputs')
 
@@ -49,7 +49,8 @@ class DumpTests(unittest.TestCase):
 
   def test_dump_statements(self):
     statements = rewrite.record_assignments(self.test_input)
-    print rewrite.dump_statements(self.test_input, statements)
+    json_statements = json.loads(rewrite.dump_statements(self.test_input, statements))
+    self.assertEqual(json_statements['package'], "testing_inputs.maybe")
 
 class RegexTests(unittest.TestCase):
   def setUp(self):

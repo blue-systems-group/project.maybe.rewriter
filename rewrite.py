@@ -253,7 +253,7 @@ def replace_blocks(content, standard_indent="\t"):
 
   return content, labels
 
-JAVA_PACKAGE_STATEMENT = re.compile(r"""^package\s+(?P<name>\S+)""")
+JAVA_PACKAGE_STATEMENT = re.compile(r"""^package\s+(?P<name>\S+?);""")
 
 def dump_statements(content, statements):
   package_match = JAVA_PACKAGE_STATEMENT.match(content)
