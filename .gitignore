@@ -1,3 +1,4 @@
 *.swp
 *.pyc
+/testing_inputs/*.maybe
 /.virtualenv
