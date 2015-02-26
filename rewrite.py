@@ -39,8 +39,6 @@ class MaybeStatement(object):
   @property
   def as_dict(self):
     return {'type': self.maybe_type,
-            'start': self.start,
-            'end': self.end,
             'label': self.label,
             'content': self.content,
             'alternatives': [a.as_dict for a in self.alternatives]}

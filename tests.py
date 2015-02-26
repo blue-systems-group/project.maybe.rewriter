@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-import re,unittest,os,yaml
-from maybe import rewrite
+import re,unittest,os,yaml,rewrite
 
 TESTING_INPUTS = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'testing_inputs')
 
