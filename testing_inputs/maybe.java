@@ -10,6 +10,11 @@ public String test = maybe("another_test") "one","two",   "three";
 // private bool anotherFail = maybe("please_no") true, false
 public String test = "maybe (\"again_no\") true, false";
 
+// 26 Feb 2015 : GWA : I guess Java doesn't like single-quoted strings? Who
+// knew!
+
+private String another_test = 'maybe (\'please_no\') true, false';
+
 maybe ("block_test") {
   if ("true") {
     i = 0;
