@@ -31,24 +31,27 @@ class RecordTests(unittest.TestCase):
 
   def test_record_blocks(self):
     statements = rewrite.record_blocks(self.test_input)
-    self.assertEqual(len(statements), 2)
-    self.assertEqual(len([s for s in statements.values() if s.is_block]), 2)
+    self.assertEqual(len(statements), 3)
+    self.assertEqual(len([s for s in statements.values() if s.is_block]), 3)
+    for label, statement in statements.items():
+      self.assertEqual(statement.label, self.answers[label]['label'])
+      self.assertEqual(len(statement.alternatives), self.answers[label]['alternative_count'])
 
 class ReplaceTests(unittest.TestCase):
   def setUp(self):
 		self.test_input = open(os.path.join(TESTING_INPUTS, 'maybe.java'), 'rU').read()
 		self.answers = yaml.load(open(os.path.join(TESTING_INPUTS, 'correct.yaml'), 'rU'))
 
-  def test_replace_assignment(self):
+  def test_replace_assignments(self):
     unused, labels = rewrite.replace_assignments(self.test_input)
     for label, output in labels.items():
       output = strip_whitespace(output)
       answer = strip_whitespace(self.answers[label]['output'])
       self.assertEqual(output, answer)
 
-  def test_block(self):
+  def test_replace_blocks(self):
     unused, labels = rewrite.replace_blocks(self.test_input)
-    self.assertEqual(len(labels), 2)
+    self.assertEqual(len(labels), 3)
 
 class DumpTests(unittest.TestCase):
   def setUp(self):

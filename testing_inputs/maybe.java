@@ -22,6 +22,13 @@ maybe ("block test") {
     i = 0;
   } else {
     j = 0;
+    maybe ("third block test") {
+      i = 1;
+    } or {
+      j = 2;
+    } or {
+      j = 3;
+    }
   }
 } or {
   i = 1;

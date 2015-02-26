@@ -43,3 +43,14 @@
       test = "three";
     }
 is_block_test: 0123456789012345
+"block test":
+  label: "block test"
+  line: 20
+  alternative_count: 3
+"third block test":
+  label: "third block test"
+  line: 25
+  alternative_count: 3
+"another block test":
+  label: "another block test"
+  alternative_count: 1
