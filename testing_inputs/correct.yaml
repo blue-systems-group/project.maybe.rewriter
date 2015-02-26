@@ -1,8 +1,10 @@
 "simple test":
   label: "simple test"
   alternatives:
-    - 1
-    - 2
+    -
+      content: 1
+    - 
+      content: 2
   output: |
     int i;
     maybe ("simple test") {
@@ -13,9 +15,12 @@
 "another test":
   label: "another test"
   alternatives:
-    - "one"
-    - "two"
-    - "three"
+    - 
+      content: "\"one\""
+    - 
+      content: "\"two\""
+    - 
+      content: "\"three\""
   output: |
     public String test;
     maybe ("another test") {

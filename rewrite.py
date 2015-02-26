@@ -32,6 +32,7 @@ class MaybeStatement(object):
     self.label = label
     self.alternatives = []
     self.content = None
+    self.line = None
 
   def __repr__(self):
     return "{{{maybe_type} {start}:{end} {label}}}".format(maybe_type=self.maybe_type,
@@ -42,6 +43,7 @@ class MaybeStatement(object):
     return {'type': self.maybe_type,
             'label': self.label,
             'content': self.content,
+            'line': self.line,
             'alternatives': [a.as_dict for a in self.alternatives]}
 
   @property
@@ -100,6 +102,7 @@ def record_assignments(content, statements=None):
     label = eval(content[match.start('label'):match.end('label')].strip())
     maybe_statement = MaybeStatement(MaybeStatement.ASSIGNMENT, match.start(), label, match.end())
     maybe_statement.content = content[match.start():match.end()]
+    maybe_statement.line = len(content[:match.start()].splitlines())
     assert not statements.has_key(maybe_statement.label)
     alternative_start = match.start('alternatives')
     alternatives = content[match.start('alternatives'):match.end('alternatives')]
@@ -163,6 +166,7 @@ def is_block(string):
 def match_to_block(match, content):
   label = eval(content[match.start('label'):match.end('label')].strip())
   maybe_block = MaybeStatement(MaybeStatement.BLOCK, match.start(), label)
+  maybe_block.line = len(content[:match.start()].splitlines())
   buffer_start = match.end() - 1
   
   value = 0
