@@ -8,6 +8,9 @@ TESTING_INPUTS = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test
 def strip_whitespace(string):
   return re.sub(r"""\s+""", "", string)
 
+def strip_quotes(string):
+  return re.sub(r"""["']""", "", string)
+
 class RecordTests(unittest.TestCase):
   def setUp(self):
 		self.test_input = open(os.path.join(TESTING_INPUTS, 'maybe.java'), 'rU').read()
@@ -41,6 +44,14 @@ class ReplaceTests(unittest.TestCase):
     unused, labels = rewrite.replace_blocks(self.test_input)
     self.assertEqual(len(labels), 2)
 
+class DumpTests(unittest.TestCase):
+  def setUp(self):
+		self.test_input = open(os.path.join(TESTING_INPUTS, 'maybe.java'), 'rU').read()
+
+  def test_dump_statements(self):
+    statements = rewrite.record_assignments(self.test_input)
+    print rewrite.dump_statements(self.test_input, statements)
+
 class RegexTests(unittest.TestCase):
   def setUp(self):
 		self.test_file = open(os.path.join(TESTING_INPUTS, 'block.java'), 'rU').read()
@@ -48,7 +59,7 @@ class RegexTests(unittest.TestCase):
 
   def test_remove_comments_and_strings(self):
     string = rewrite.remove_comments_and_strings(self.test_file).rstrip('\n')
-    self.assertEqual(strip_whitespace(string), self.answers['is_block_test'])
+    self.assertEqual(strip_quotes(strip_whitespace(string)), self.answers['is_block_test'])
 
 if __name__ == '__main__':
   unittest.main()

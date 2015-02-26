@@ -1,4 +1,4 @@
-import re, random
+import re, random, json
 
 class MaybeAlternative(object):
   def __init__(self, value, offset, start, end, content):
@@ -13,6 +13,14 @@ class MaybeAlternative(object):
   def __repr__(self):
     return "[{start}:{end} {content}]".format(start=self.start, end=self.end, content=self.content)
 
+  @property
+  def as_dict(self):
+    return {'value': self.value,
+            'offset': self.offset,
+            'start': self.start,
+            'end': self.end,
+            'content': self.content}
+
 class MaybeStatement(object):
   ASSIGNMENT = "assignment"
   BLOCK = "block"
@@ -23,11 +31,20 @@ class MaybeStatement(object):
     self.end = end
     self.label = label
     self.alternatives = []
+    self.content = None
 
   def __repr__(self):
-    return "\{{maybe_type} {start}:{end} {label}\}".format(maybe_type=self.maybe_type,
+    return "{{{maybe_type} {start}:{end} {label}}}".format(maybe_type=self.maybe_type,
                                                            start=self.start, end=self.end,
                                                            label=self.label)
+  @property
+  def as_dict(self):
+    return {'type': self.maybe_type,
+            'start': self.start,
+            'end': self.end,
+            'label': self.label,
+            'content': self.content,
+            'alternatives': [a.as_dict for a in self.alternatives]}
 
   @property
   def is_assignment(self):
@@ -41,18 +58,24 @@ def remove_comments_and_strings(string):
   MULTI_LINE_COMMENTS_PATTERN= re.compile(r"""(?s)/\*.*?\*/""") 
   SINGLE_LINE_COMMENTS_PATTERN= re.compile(r"""(?m)//.*$""") 
 
-  SINGLE_QUOTE_STRING_PATTERN= re.compile(r"""'(?:\\'|[^'\n])*'""")
-  DOUBLE_QUOTE_STRING_PATTERN= re.compile(r'"(?:\\"|[^"\n])*"')
+  SINGLE_QUOTE_STRING_PATTERN= re.compile(r"""'(?P<quoted>\\'|[^'\n])*?'""")
+  DOUBLE_QUOTE_STRING_PATTERN= re.compile(r'"(?P<quoted>\\"|[^"\n])*?"')
   
   def equivalent_whitespace(match):
     return " " * len(match.group())
 
+  def single_quotes(match):
+    return "'%s'" % (" "* len(match.group('quoted')),)
+  
+  def double_quotes(match):
+    return '"%s"' % (" "* len(match.group('quoted')),)
+  
   initial_length = len(string)
 
   string = MULTI_LINE_COMMENTS_PATTERN.sub(equivalent_whitespace, string)
   string = SINGLE_LINE_COMMENTS_PATTERN.sub(equivalent_whitespace, string)
-  string = SINGLE_QUOTE_STRING_PATTERN.sub(equivalent_whitespace, string)
-  string = DOUBLE_QUOTE_STRING_PATTERN.sub(equivalent_whitespace, string)
+  string = SINGLE_QUOTE_STRING_PATTERN.sub(single_quotes, string)
+  string = DOUBLE_QUOTE_STRING_PATTERN.sub(double_quotes, string)
 
   assert len(string) == initial_length, "Cleaning changed string length."
   return string
@@ -72,12 +95,16 @@ maybe ("{label}") {{
 }}
 """
 
-def record_assignments(content, statements={}):
+def record_assignments(content, statements=None):
+  if not statements:
+    statements = {}
   cleaned_content = remove_comments_and_strings(content)
+  print cleaned_content
   
   def record_assignment(match):
     label = eval(content[match.start('label'):match.end('label')].strip())
     maybe_statement = MaybeStatement(MaybeStatement.ASSIGNMENT, match.start(), label, match.end())
+    maybe_statement.content = content[match.start():match.end()]
     assert not statements.has_key(maybe_statement.label)
     alternative_start = match.start('alternatives')
     for value, alternative in enumerate(match.group('alternatives').split(',')):
@@ -162,6 +189,7 @@ def match_to_block(match, content):
     else:
       break
   maybe_block.end = buffer_end
+  maybe_block.content = content[maybe_block.start:maybe_block.end]
   return maybe_block
 
 BLOCK_START_PATTERN = re.compile(r"""^(?m)(?P<indent>[^\S\n]*)maybe\s*\((?P<label>.+?)\)\s*{""")
@@ -184,7 +212,9 @@ case {value}: {{
 }}
 """
 
-def record_blocks(content, statements={}):
+def record_blocks(content, statements=None):
+  if not statements:
+    statements = {}
   cleaned_content = remove_comments_and_strings(content)
   
   for match in BLOCK_START_PATTERN.finditer(cleaned_content):
@@ -221,3 +251,17 @@ def replace_blocks(content, standard_indent="\t"):
       break
 
   return content, labels
+
+JAVA_PACKAGE_STATEMENT = re.compile(r"""^package\s+(?P<name>\S+)""")
+
+def dump_statements(content, statements):
+  package_match = JAVA_PACKAGE_STATEMENT.match(content)
+  assert package_match, "No package name provided"
+  package_name = package_match.group('name').strip()
+  
+  statement_list = []
+  for statement in sorted(statements.values(), key=lambda s: s.start):
+    statement_list.append(statement.as_dict)
+  complete_dict = {"package": package_name,
+                   "statements": statement_list}
+  return json.dumps(complete_dict, indent=4)

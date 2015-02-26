@@ -1,3 +1,5 @@
+package testing_inputs.java;
+
 // 26 Feb 2015 : GWA : These should work.
 
 int i = maybe("simple_test") 1, 2;
