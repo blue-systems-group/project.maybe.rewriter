@@ -59,8 +59,10 @@ class DumpTests(unittest.TestCase):
 
   def test_dump_statements(self):
     statements = rewrite.record_assignments(self.test_input)
+    statements = rewrite.record_blocks(self.test_input, statements)
     json_statements = json.loads(rewrite.dump_statements(self.test_input, statements))
     self.assertEqual(json_statements['package'], "testing_inputs.maybe")
+    self.assertEqual(len(json_statements['statements']), 5)
 
 class RegexTests(unittest.TestCase):
   def setUp(self):
