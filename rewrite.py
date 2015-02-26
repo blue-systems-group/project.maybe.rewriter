@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import re,random,json,argparse,os
+import re,random,json,argparse,os,sys
 
 class MaybeAlternative(object):
   def __init__(self, value, offset, start, end, content):
@@ -19,8 +19,7 @@ class MaybeAlternative(object):
   def as_dict(self):
     return {'value': self.value,
             'start': self.start,
-            'end': self.end,
-            'content': self.content}
+            'end': self.end}
 
 class MaybeStatement(object):
   ASSIGNMENT = "assignment"
@@ -97,10 +96,6 @@ maybe ("{label}") {{
 """
 
 def record_assignments(content, statements=None):
-  if not statements:
-    statements = {}
-  cleaned_content = remove_comments_and_strings(content)
-  
   def record_assignment(match):
     label = eval(content[match.start('label'):match.end('label')].strip())
     maybe_statement = MaybeStatement(MaybeStatement.ASSIGNMENT, match.start(), label, match.end())
@@ -120,14 +115,17 @@ def record_assignments(content, statements=None):
       alternative_start += len(alternative.lstrip()) + 1
     statements[maybe_statement.label] = maybe_statement
   
+  if not statements:
+    statements = {}
+  cleaned_content = remove_comments_and_strings(content)
+  
   for match in ASSIGNMENT_PATTERN.finditer(cleaned_content):
     record_assignment(match)
 
   return statements
 
 def replace_assignments(content, standard_indent="\t"):
-  labels = {}
-  def replace_assignment(match, content):
+  def replace_assignment(match, content, labels):
     label = eval(content[match.start('label'):match.end('label')].strip())
     assert not labels.has_key(label)
     indent = match.group('indent')
@@ -147,11 +145,13 @@ def replace_assignments(content, standard_indent="\t"):
     labels[label] = replacement
     return content[:match.start()] + replacement + content[match.end():]
   
+  labels = {}
+
   while True:
     cleaned_content = remove_comments_and_strings(content)
     assignment_match = ASSIGNMENT_PATTERN.search(cleaned_content)
     if assignment_match:
-      content = replace_assignment(assignment_match, content)
+      content = replace_assignment(assignment_match, content, labels)
     else:
       break
   return content, labels
@@ -269,7 +269,10 @@ def dump_statements(content, statements):
 
 if __name__=='__main__':
   parser = argparse.ArgumentParser(description='Rewrite maybe statements.')
-  parser.add_argument('input_file', type=str, help="Input file to rewrite.")
+  parser.add_argument('input_file', type=str,
+                      help="Input file to rewrite.")
+  parser.add_argument('--metadata', action='store_true',
+                      help="Dump metadata to standard output and exit.")
   args = parser.parse_args()
   basename, ext = os.path.splitext(args.input_file)
   assert ext == '.java', "Input must be a Java file: %s" % (ext,)
@@ -277,5 +280,9 @@ if __name__=='__main__':
 
   statements = record_assignments(content)
   statements = record_blocks(content, statements)
-
-  print dump_statements(content, statements)
+  
+  if not args.metadata:
+    f = open(os.path.join(basename, '.maybe'), 'wb')
+  else:
+    f = sys.stdout
+  print >>f, dump_statements(content, statements)
