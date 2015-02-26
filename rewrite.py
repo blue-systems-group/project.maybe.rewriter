@@ -296,7 +296,7 @@ if __name__=='__main__':
     statements = record_blocks(content, statements)
     
     if not args.only_metadata:
-      f = open(os.path.join(basename, '.maybe'), 'wb')
+      f = open(basename + '.maybe', 'wb')
     else:
       f = sys.stdout
     print >>f, dump_statements(content, statements)
