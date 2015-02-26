@@ -1,4 +1,6 @@
-import re, random, json
+#!/usr/bin/env python
+
+import re,random,json,argparse,os
 
 class MaybeAlternative(object):
   def __init__(self, value, offset, start, end, content):
@@ -264,3 +266,16 @@ def dump_statements(content, statements):
   complete_dict = {"package": package_name,
                    "statements": statement_list}
   return json.dumps(complete_dict, indent=4)
+
+if __name__=='__main__':
+  parser = argparse.ArgumentParser(description='Rewrite maybe statements.')
+  parser.add_argument('input_file', type=str, help="Input file to rewrite.")
+  args = parser.parse_args()
+  basename, ext = os.path.splitext(args.input_file)
+  assert ext == '.java', "Input must be a Java file: %s" % (ext,)
+  content = open(args.input_file, 'rU').read()
+
+  statements = record_assignments(content)
+  statements = record_blocks(content, statements)
+
+  print dump_statements(content, statements)
