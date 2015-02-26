@@ -3,8 +3,12 @@
   alternatives:
     -
       content: 1
+      start: 29
+      end: 30
     - 
       content: 2
+      start: 32
+      end: 33
   output: |
     int i;
     maybe ("simple test") {
@@ -17,10 +21,16 @@
   alternatives:
     - 
       content: "\"one\""
+      start: 43
+      end: 48
     - 
       content: "\"two\""
+      start: 49
+      end: 54
     - 
       content: "\"three\""
+      start: 58
+      end: 65
   output: |
     public String test;
     maybe ("another test") {
