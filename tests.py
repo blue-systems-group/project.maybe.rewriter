@@ -12,7 +12,7 @@ def strip_quotes(string):
 
 class RecordTests(unittest.TestCase):
   def setUp(self):
-		self.test_input = open(os.path.join(TESTING_INPUTS, 'maybe.java'), 'rU').read()
+		self.test_input = open(os.path.join(TESTING_INPUTS, 'example.java'), 'rU').read()
 		self.answers = yaml.load(open(os.path.join(TESTING_INPUTS, 'correct.yaml'), 'rU'))
   
   def test_record_assignments(self):
@@ -39,7 +39,7 @@ class RecordTests(unittest.TestCase):
 
 class ReplaceTests(unittest.TestCase):
   def setUp(self):
-		self.test_input = open(os.path.join(TESTING_INPUTS, 'maybe.java'), 'rU').read()
+		self.test_input = open(os.path.join(TESTING_INPUTS, 'example.java'), 'rU').read()
 		self.answers = yaml.load(open(os.path.join(TESTING_INPUTS, 'correct.yaml'), 'rU'))
 
   def test_replace_assignments(self):
@@ -55,7 +55,7 @@ class ReplaceTests(unittest.TestCase):
 
 class DumpTests(unittest.TestCase):
   def setUp(self):
-		self.test_input = open(os.path.join(TESTING_INPUTS, 'maybe.java'), 'rU').read()
+		self.test_input = open(os.path.join(TESTING_INPUTS, 'example.java'), 'rU').read()
 
   def test_dump_statements(self):
     statements = rewrite.record_assignments(self.test_input)

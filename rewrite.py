@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import re,random,json,argparse,os,sys
+import re,random,json,argparse,os,sys,hashlib
 
 class MaybeAlternative(object):
   def __init__(self, value, offset, start, end, content):
@@ -268,6 +268,7 @@ JAVA_PACKAGE_STATEMENT = re.compile(r"""^package\s+(?P<name>\S+?);""")
 
 def dump_statements(content, statements):
   package_match = JAVA_PACKAGE_STATEMENT.match(content)
+  content_hash = hashlib.sha224(content).hexdigest()
   assert package_match, "No package name provided"
   package_name = package_match.group('name').strip()
   
@@ -275,6 +276,7 @@ def dump_statements(content, statements):
   for statement in sorted(statements.values(), key=lambda s: s.start):
     statement_list.append(statement.as_dict)
   complete_dict = {"package": package_name,
+                   "sha224_hash": content_hash,
                    "statements": statement_list}
   return json.dumps(complete_dict, indent=4)
 
