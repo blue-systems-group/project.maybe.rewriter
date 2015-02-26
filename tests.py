@@ -37,10 +37,9 @@ class ReplaceTests(unittest.TestCase):
       answer = strip_whitespace(self.answers[label]['output'])
       self.assertEqual(output, answer)
 
-  @unittest.skip("")
   def test_block(self):
-    blocks = rewrite.block(self.test_input)
-    self.assertEqual(len(blocks), 1)
+    unused, labels = rewrite.replace_blocks(self.test_input)
+    self.assertEqual(len(labels), 2)
 
 class RegexTests(unittest.TestCase):
   def setUp(self):

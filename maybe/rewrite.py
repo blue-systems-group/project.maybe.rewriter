@@ -1,4 +1,4 @@
-import re
+import re, random
 
 class MaybeAlternative(object):
   def __init__(self, value, offset, start, end, content):
@@ -65,6 +65,12 @@ ASSIGNMENT_PATTERN = re.compile(r"""(?xum)
                                 (?P<alternatives>(?:[^,;]+,)+\s*
                                 [^,\n]+)\s*?
                                 ;$""")
+ASSIGNMENT_TEMPLATE = """
+{variable};
+maybe ("{label}") {{
+{inner}
+}}
+"""
 
 def record_assignments(content, statements={}):
   cleaned_content = remove_comments_and_strings(content)
@@ -91,7 +97,7 @@ def record_assignments(content, statements={}):
 
   return statements
 
-def replace_assignments(content):
+def replace_assignments(content, standard_indent="\t"):
   labels = {}
   def replace_assignment(match, content):
     label = eval(content[match.start('label'):match.end('label')].strip())
@@ -101,16 +107,15 @@ def replace_assignments(content):
     separator = "\n{indent}}} or {{\n".format(indent=indent)
     name = re.split(r"""\s+""", match.group('variable').strip())[-1]
     alternatives = content[match.start('alternatives'):match.end('alternatives')]
-    inner = separator.join(["{indent}  {name} = {a};".format(indent=indent, name=name, a=a.strip()) for a in alternatives.split(',')])
-    replacement =  """
-{indent}{variable};
-{indent}maybe ("{label}") {{
-{inner}
-{indent}}}
-""".format(indent=indent,
-           variable=variable,
-           label=label,
-           inner=inner)
+    inner = separator.join(["{indent}{name} = {a};".format(indent=standard_indent, name=name, a=a.strip()) for a in alternatives.split(',')])
+    replacement = ASSIGNMENT_TEMPLATE.format(indent=indent,
+                                             variable=variable,
+                                             label=label,
+                                             inner=inner)
+    indented_replacement = ""
+    for line in replacement.splitlines():
+      indented_replacement += indent + line
+    replacement = indented_replacement
     labels[label] = replacement
     return content[:match.start()] + replacement + content[match.end():]
   
@@ -162,6 +167,23 @@ def match_to_block(match, content):
 BLOCK_START_PATTERN = re.compile(r"""^(?m)(?P<indent>[^\S\n]*)maybe\s*\((?P<label>.+?)\)\s*{""")
 ALTERNATIVE_START_PATTERN = re.compile(r"""^\s*or\s*{""")
 
+JAVA_BLOCK_TEMPLATE = """
+int {name} = 0;
+
+try {{
+{stdindent}{name} = getMaybeAlternative("{label}");
+}} catch (Exception e) {{ }};
+switch ({name}) {{
+{inner}
+}}
+"""
+JAVA_BLOCK_ALTERNATIVE_TEMPLATE = """
+case {value}: {{
+{contents}
+{stdindent}break;
+}}
+"""
+
 def record_blocks(content, statements={}):
   cleaned_content = remove_comments_and_strings(content)
   
@@ -170,3 +192,32 @@ def record_blocks(content, statements={}):
     assert not statements.has_key(maybe_block.label)
     statements[maybe_block.label] = maybe_block
   return statements
+
+def replace_blocks(content, standard_indent="\t"):
+  labels = {}
+  
+  while True:
+    cleaned_content = remove_comments_and_strings(content)
+    block_match = BLOCK_START_PATTERN.search(cleaned_content)
+    if block_match:
+      maybe_block = match_to_block(block_match, content)
+      assert not labels.has_key(maybe_block.label)
+      name = "__{slug}__{nonce}".format(slug=re.sub("[^A-Za-z0-9]", "_", maybe_block.label),
+                                        nonce=random.randint(0,1024))
+      inner = ""
+      for alternative in maybe_block.alternatives:
+        contents = ""
+        for line in alternative.content.splitlines():
+          contents += standard_indent + line
+        inner += JAVA_BLOCK_ALTERNATIVE_TEMPLATE.format(value=alternative.value,
+                                                        contents=contents,
+                                                        stdindent=standard_indent)
+      replacement = JAVA_BLOCK_TEMPLATE.format(name=name, stdindent=standard_indent,
+                                               label=maybe_block.label,
+                                               inner=inner)
+      labels[maybe_block.label] = replacement
+      content = content[:block_match.start()] + replacement + content[block_match.end():]
+    else:
+      break
+
+  return content, labels
