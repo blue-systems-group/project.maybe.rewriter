@@ -61,7 +61,7 @@ ASSIGNMENT_PATTERN = re.compile(r"""(?xum)
                                 ^(?P<indent>[^\S\n]*)
                                 (?P<variable>.*?)
                                 =\s*maybe\s*
-                                \((?P<label>.+?)\)\s*
+                                \((?P<label>.+?)\)
                                 (?P<alternatives>(?:[^,;]+,)+\s*
                                 [^,\n]+)\s*?
                                 ;$""")
@@ -93,17 +93,18 @@ def record_assignments(content, statements={}):
 
 def replace_assignments(content):
   labels = {}
-  def replace_assignment(match):
-    label = match.group('label').strip()
+  def replace_assignment(match, content):
+    label = eval(content[match.start('label'):match.end('label')].strip())
     assert not labels.has_key(label)
     indent = match.group('indent')
     variable = match.group('variable').rstrip()
     separator = "\n{indent}}} or {{\n".format(indent=indent)
     name = re.split(r"""\s+""", match.group('variable').strip())[-1]
-    inner = separator.join(["{indent}  {name} = {a};".format(indent=indent, name=name, a=a.strip()) for a in match.group('alternatives').split(',')])
+    alternatives = content[match.start('alternatives'):match.end('alternatives')]
+    inner = separator.join(["{indent}  {name} = {a};".format(indent=indent, name=name, a=a.strip()) for a in alternatives.split(',')])
     replacement =  """
 {indent}{variable};
-{indent}maybe ({label}) {{
+{indent}maybe ("{label}") {{
 {inner}
 {indent}}}
 """.format(indent=indent,
@@ -111,10 +112,16 @@ def replace_assignments(content):
            label=label,
            inner=inner)
     labels[label] = replacement
-    return replacement
+    return content[:match.start()] + replacement + content[match.end():]
   
-  output = ASSIGNMENT_PATTERN.sub(replace_assignment, content)
-  return output, labels
+  while True:
+    cleaned_content = remove_comments_and_strings(content)
+    assignment_match = ASSIGNMENT_PATTERN.search(cleaned_content)
+    if assignment_match:
+      content = replace_assignment(assignment_match, content)
+    else:
+      break
+  return content, labels
 
 def is_block(string):
   return (string.count("{") - string.count("}") == 0)

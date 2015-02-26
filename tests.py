@@ -33,7 +33,6 @@ class ReplaceTests(unittest.TestCase):
   def test_replace_assignment(self):
     unused, labels = rewrite.replace_assignments(self.test_input)
     for label, output in labels.items():
-      label = eval(label)
       output = strip_whitespace(output)
       answer = strip_whitespace(self.answers[label]['output'])
       self.assertEqual(output, answer)
