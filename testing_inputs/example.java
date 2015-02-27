@@ -1,3 +1,7 @@
+// 27 Feb 2015 : GWA : Testing comments about the package statement.
+
+/* 27 Feb 2015 : GWA : Here's another one. */
+
 package testing_inputs.maybe;
 
 // 26 Feb 2015 : GWA : These should work.

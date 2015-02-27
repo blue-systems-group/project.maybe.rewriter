@@ -1,6 +1,6 @@
 "simple test":
   label: "simple test"
-  line: 5
+  line: 9
   alternatives:
     -
       content: 1
@@ -19,7 +19,7 @@
     }
 "another test":
   label: "another test"
-  line: 6
+  line: 10
   alternatives:
     - 
       content: "\"one\""
@@ -45,11 +45,11 @@
 is_block_test: 0123456789012345
 "block test":
   label: "block test"
-  line: 20
+  line: 24
   alternative_count: 3
 "third block test":
   label: "third block test"
-  line: 25
+  line: 29
   alternative_count: 3
 "another block test":
   label: "another block test"
