@@ -215,6 +215,10 @@ JAVA_BLOCK_ALTERNATIVE_TEMPLATE = """
 case {value}: {{{contents}{indent}break;
 }}
 """
+JAVA_LAST_BLOCK_ALTERNATIVE_TEMPLATE = """
+default: {{{contents}{indent}if ({name} != 0) {{ badMaybeAlternative("{label}", {name}); }}{indent}break;
+}}
+"""
 
 def record_blocks(content, statements=None):
   if not statements:
@@ -238,21 +242,30 @@ def replace_blocks(content, standard_indent="  "):
       assert not labels.has_key(maybe_block.label)
       name = "__{slug}__{nonce}".format(slug=re.sub("[^A-Za-z0-9]", "_", maybe_block.label),
                                         nonce=random.randint(0,1024))
-      inner = ""
+      inner = []
       alternative_indent = re.match("^\s*", maybe_block.alternatives[0].content).group()
-      for alternative in maybe_block.alternatives:
-        unindented_inner = JAVA_BLOCK_ALTERNATIVE_TEMPLATE.format(value=alternative.value,
-                                                                  contents=alternative.content.rstrip(),
-                                                                  indent=alternative_indent,
-                                                                  stdindent=standard_indent)
+      for i, alternative in enumerate(maybe_block.alternatives):
+        if i == 0:
+          block_template = JAVA_LAST_BLOCK_ALTERNATIVE_TEMPLATE
+        else:
+          block_template = JAVA_BLOCK_ALTERNATIVE_TEMPLATE
+
+        unindented_inner = block_template.format(value=alternative.value,
+                                                 contents=alternative.content.rstrip(),
+                                                 indent=alternative_indent,
+                                                 stdindent=standard_indent,
+                                                 label=maybe_block.label,
+                                                 name=name)
         indented_inner = []
         for line in unindented_inner.splitlines():
           indented_inner.append(standard_indent + line)
         indented_inner = "\n".join(indented_inner)
-        inner += indented_inner
+        inner.append(indented_inner)
+
+      reversed_inner = "".join(reversed(inner))
       replacement = JAVA_BLOCK_TEMPLATE.format(name=name, stdindent=standard_indent,
                                                label=maybe_block.label,
-                                               inner=inner)
+                                               inner=reversed_inner)
       indented_replacement = []
       for line in replacement.splitlines():
         indented_replacement.append(block_match.group('indent') + line)
