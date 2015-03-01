@@ -91,10 +91,15 @@ def record_blocks(content):
 
 
 if __name__ == '__main__':
-  f = open(sys.argv[1], "r")
-  file_content = f.read()
-  inter_file_content = remove_comments_and_strings(file_content)
-  blocks = record_blocks(inter_file_content)
-  for block in blocks:
-    print block
-    print "==================================="
+  for root, dirs, files in os.walk("/home/jerry/WORKING_DIRECTORY"):
+    for file in files:
+      file_name = file.split('.')
+      if len(file_name) > 1:
+        if file_name[1] == 'java':
+          f = open(root+"/"+file, "r")
+          file_content = f.read()
+          inter_file_content = remove_comments_and_strings(file_content)
+          blocks = record_blocks(inter_file_content)
+          for block in blocks:
+            print block
+            print "==================================="
