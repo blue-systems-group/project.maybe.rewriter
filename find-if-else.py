@@ -55,7 +55,7 @@ def match_to_block(match, content):
 
     while True:
       buffer_increment = content[search_start:].find("}")
-      assert buffer_increment != -1, "Unmatched braces."
+      #assert buffer_increment != -1, "Unmatched braces."
       buffer_end += buffer_increment + 1
       block_buffer = content[buffer_start:buffer_end]
       if is_block(block_buffer):
@@ -91,15 +91,23 @@ def record_blocks(content):
 
 
 if __name__ == '__main__':
+  dont_search = ['ClipData.java', 'IntentResolver.java', \
+      'DocumentsActivity.java', 'VideoEditorActivity.java', \
+      'DriverRS.java.template', 'CameraActivity.java']
   for root, dirs, files in os.walk("/home/jerry/WORKING_DIRECTORY"):
     for file in files:
       file_name = file.split('.')
       if len(file_name) > 1:
         if file_name[1] == 'java':
-          f = open(root+"/"+file, "r")
-          file_content = f.read()
-          inter_file_content = remove_comments_and_strings(file_content)
-          blocks = record_blocks(inter_file_content)
-          for block in blocks:
-            print block
-            print "==================================="
+          print root+"/"+file
+          if file in dont_search:
+            continue
+          else:
+            f = open(root+"/"+file, "r")
+            file_content = f.read()
+            inter_file_content = remove_comments_and_strings(file_content)
+            blocks = record_blocks(inter_file_content)
+            for block in blocks:
+              print root+"/"+file
+              print block
+              print "==================================="
