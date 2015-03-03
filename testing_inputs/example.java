@@ -42,3 +42,31 @@ maybe ("block test") {
     j = 3;
   }
 }
+
+// 5 Mar 2015 : JAA : Modified previous example to consider 'or'
+// blocks on a newline
+maybe ("newline_or block test") {
+  if ("true") {
+    i = 0;
+  } else {
+    j = 0;
+    maybe ("newline_or third block test") {
+      i = 1;
+    } 
+		or {
+      j = 2;
+    } 
+		or {
+      j = 3;
+    }
+  }
+} 
+or {
+  i = 1;
+} 
+or {
+  j = 2;
+  maybe ("newline_or another block test") {
+    j = 3;
+  }
+}
