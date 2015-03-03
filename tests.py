@@ -31,8 +31,8 @@ class RecordTests(unittest.TestCase):
 
   def test_record_blocks(self):
     statements = rewrite.record_blocks(self.test_input)
-    self.assertEqual(len(statements), 3)
-    self.assertEqual(len([s for s in statements.values() if s.is_block]), 3)
+    self.assertEqual(len(statements), 6)
+    self.assertEqual(len([s for s in statements.values() if s.is_block]), 6)
     for label, statement in statements.items():
       self.assertEqual(statement.label, self.answers[label]['label'])
       self.assertEqual(len(statement.alternatives), self.answers[label]['alternative_count'])
@@ -51,7 +51,7 @@ class ReplaceTests(unittest.TestCase):
 
   def test_replace_blocks(self):
     unused, labels = rewrite.replace_blocks(self.test_input)
-    self.assertEqual(len(labels), 3)
+    self.assertEqual(len(labels), 6)
 
 class DumpTests(unittest.TestCase):
   def setUp(self):
@@ -62,7 +62,7 @@ class DumpTests(unittest.TestCase):
     statements = rewrite.record_blocks(self.test_input, statements)
     json_statements = json.loads(rewrite.dump_statements(self.test_input, statements))
     self.assertEqual(json_statements['package'], "testing_inputs.maybe")
-    self.assertEqual(len(json_statements['statements']), 5)
+    self.assertEqual(len(json_statements['statements']), 8)
 
 class RegexTests(unittest.TestCase):
   def setUp(self):

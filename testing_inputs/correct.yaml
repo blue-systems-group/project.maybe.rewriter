@@ -54,3 +54,14 @@ is_block_test: 0123456789012345
 "another block test":
   label: "another block test"
   alternative_count: 1
+"newline_or block test":
+  label: "newline_or block test"
+  line: 24
+  alternative_count: 3
+"newline_or third block test":
+  label: "newline_or third block test"
+  line: 29
+  alternative_count: 3
+"newline_or another block test":
+  label: "newline_or another block test"
+  alternative_count: 1
