@@ -1,0 +1,89 @@
+"if_else_test":
+  label: "simple_test"
+  output: |
+    if (user) {
+      System.out.println("Hello user");
+    } else {
+      System.out.println("Hello stranger");
+      int x = 1000;
+    }
+
+"if_else_if_test":
+  label: "if_else_if_test"
+  output: |
+    if (value == 1) {
+      System.out.println("I have a value of one.");
+    } else if (value == 2) {
+      System.out.println("I have a value of two.");
+    } else if (value == 3) {
+      System.out.println("I have a value of three.");
+    } else {
+      System.out.println("I have a value of four.");
+    }
+
+"nested_if_else":
+  label: "nested_if_else"
+  output: |
+    if (x < 50) {
+      System.out.println("I'm less than 50");
+      if (x < 25) {
+        System.out.println("I'm less than 25");
+      } else {
+        System.out.println("I'm greater than 25 but less than 50");
+      }
+    } else {
+      System.out.println("I'm greater than or equal to 50");
+      if (x < 75) {
+        System.out.println("I'm less than 75 but greater than 50");
+      } else {
+        System.out.println("I'm greater than 75");
+      }
+    }
+
+"aosp_code":
+  label: "aosp_code"
+  output: |
+    if (uri != null) {
+
+
+
+
+        FileInputStream stream = null;
+        try {
+
+            AssetFileDescriptor descr = context.getContentResolver()
+                    .openTypedAssetFileDescriptor(uri, "text/*", null);
+            stream = descr.createInputStream();
+            InputStreamReader reader = new InputStreamReader(stream, "UTF-8");
+
+
+            StringBuilder builder = new StringBuilder(128);
+            char[] buffer = new char[8192];
+            int len;
+            while ((len=reader.read(buffer)) > 0) {
+                builder.append(buffer, 0, len);
+            }
+            return builder.toString();
+
+        } catch (FileNotFoundException e) {
+
+
+
+        } catch (IOException e) {
+
+            Log.w("ClippedData", "Failure loading text", e);
+            return e.toString();
+
+        } finally {
+            if (stream != null) {
+                try {
+                    stream.close();
+                } catch (IOException e) {
+                }
+            }
+        }
+
+
+
+        return uri.toString();
+    }
