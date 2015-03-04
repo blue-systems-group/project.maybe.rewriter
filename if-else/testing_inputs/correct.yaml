@@ -1,0 +1,81 @@
+"if_else_test":
+  label: "simple_test"
+  output: |
+    if (user) {
+      System.out.println();
+    } else {
+      System.out.println();
+      int x = 1000;
+    }
+
+"if_else_if_test":
+  label: "if_else_if_test"
+  output: |
+    if (value == 1) {
+      System.out.println();
+    } else if (value == 2) {
+      System.out.println();
+    } else if (value == 3) {
+      System.out.println();
+    } else {
+      System.out.println();
+    }
+
+"nested_if_else":
+  label: "nested_if_else"
+  output: |
+    if (x < 50) {
+      System.out.println();
+      if (x < 25) {
+        System.out.println();
+      } else {
+        System.out.println();
+      }
+    } else {
+      System.out.println();
+      if (x < 75) {
+        System.out.println();
+      } else {
+        System.out.println();
+      }
+    }
+
+"aosp_code":
+  label: "aosp_code"
+  output: |
+    if (uri != null) {
+        FileInputStream stream = null;
+        try {
+            AssetFileDescriptor descr = context.getContentResolver()
+                    .openTypedAssetFileDescriptor(uri, , null);
+            stream = descr.createInputStream();
+            InputStreamReader reader = new InputStreamReader(stream, );
+            StringBuilder builder = new StringBuilder(128);
+            char[] buffer = new char[8192];
+            int len;
+            while ((len=reader.read(buffer)) > 0) {
+                builder.append(buffer, 0, len);
+            }
+            return builder.toString();
+        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
+            Log.w(, , e);
+            return e.toString();
+        } finally {
+            if (stream != null) {
+                try {
+                    stream.close();
+                } catch (IOException e) {
+                }
+            }
+        }
+        return uri.toString();
+    }
+
+"long_condition":
+  label: "long_condition"
+  output: |
+    if(x>20 && x<30 && y!=0 || (z=true && x>30) || (y<30 && x<10) || (x!=50 &&
+        y!=20 || z=false) && (z=true && x!=0 && y!=0)) {
+      System.out.println("Do something");
+    }
