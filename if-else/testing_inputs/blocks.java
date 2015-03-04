@@ -43,8 +43,8 @@ if (x < 50) {
   }
 }
 
-// 3 Mar 2015: JAA : Trying an actual piece of code in AOSP. 
-// File name: ClipData.java
+ 3 Mar 2015: JAA : Trying an actual piece of code in AOSP. 
+ File name: ClipData.java
 if (uri != null) {
 
     // First see if the URI can be opened as a plain text stream
@@ -88,4 +88,14 @@ if (uri != null) {
     // If we couldn't open the URI as a stream, then the URI itself
     // probably serves fairly well as a textual representation.
     return uri.toString();
+}
+
+// 3 Mar 2015: JAA : Trying to parse an exceptionally long expression as 
+// the condition.
+System.out.println("Do something");
+int x = 1000, y =50;
+boolean z = true;
+if(x>20 && x<30 && y!=0 || (z=true && x>30) || (y<30 && x<10) || (x!=50 &&
+		y!=20 || z=false) && (z=true && x!=0 && y!=0)) {
+	System.out.println("Do something");
 }

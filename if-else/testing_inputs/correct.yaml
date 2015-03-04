@@ -2,9 +2,9 @@
   label: "simple_test"
   output: |
     if (user) {
-      System.out.println("Hello user");
+      System.out.println();
     } else {
-      System.out.println("Hello stranger");
+      System.out.println();
       int x = 1000;
     }
 
@@ -12,31 +12,31 @@
   label: "if_else_if_test"
   output: |
     if (value == 1) {
-      System.out.println("I have a value of one.");
+      System.out.println();
     } else if (value == 2) {
-      System.out.println("I have a value of two.");
+      System.out.println();
     } else if (value == 3) {
-      System.out.println("I have a value of three.");
+      System.out.println();
     } else {
-      System.out.println("I have a value of four.");
+      System.out.println();
     }
 
 "nested_if_else":
   label: "nested_if_else"
   output: |
     if (x < 50) {
-      System.out.println("I'm less than 50");
+      System.out.println();
       if (x < 25) {
-        System.out.println("I'm less than 25");
+        System.out.println();
       } else {
-        System.out.println("I'm greater than 25 but less than 50");
+        System.out.println();
       }
     } else {
-      System.out.println("I'm greater than or equal to 50");
+      System.out.println();
       if (x < 75) {
-        System.out.println("I'm less than 75 but greater than 50");
+        System.out.println();
       } else {
-        System.out.println("I'm greater than 75");
+        System.out.println();
       }
     }
 
@@ -44,19 +44,12 @@
   label: "aosp_code"
   output: |
     if (uri != null) {
-
-
-
-
         FileInputStream stream = null;
         try {
-
             AssetFileDescriptor descr = context.getContentResolver()
-                    .openTypedAssetFileDescriptor(uri, "text/*", null);
+                    .openTypedAssetFileDescriptor(uri, , null);
             stream = descr.createInputStream();
-            InputStreamReader reader = new InputStreamReader(stream, "UTF-8");
-
-
+            InputStreamReader reader = new InputStreamReader(stream, );
             StringBuilder builder = new StringBuilder(128);
             char[] buffer = new char[8192];
             int len;
@@ -64,16 +57,10 @@
                 builder.append(buffer, 0, len);
             }
             return builder.toString();
-
         } catch (FileNotFoundException e) {
-
-
-
         } catch (IOException e) {
-
-            Log.w("ClippedData", "Failure loading text", e);
+            Log.w(, , e);
             return e.toString();
-
         } finally {
             if (stream != null) {
                 try {
@@ -82,8 +69,13 @@
                 }
             }
         }
-
-
-
         return uri.toString();
+    }
+
+"long_condition":
+  label: "long_condition"
+  output: |
+    if(x>20 && x<30 && y!=0 || (z=true && x>30) || (y<30 && x<10) || (x!=50 &&
+        y!=20 || z=false) && (z=true && x!=0 && y!=0)) {
+      System.out.println("Do something");
     }

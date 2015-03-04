@@ -16,29 +16,32 @@ class ExtractTests(unittest.TestCase):
                                   'rU'))
 
   def test_extract_simple_block(self):
-    cleaned_input = findifelse.remove_comments(self.test_input)
-    blocks = findifelse.extract_blocks(cleaned_input)
-    self.assertEqual(blocks[0],
+    blocks = findifelse.extract_blocks(self.test_input)
+    self.assertEqual(blocks[0]['content'],
                       self.answers['if_else_test']['output'].rstrip('\n'))
 
   def test_extract_if_else_if_block(self):
-    cleaned_input = findifelse.remove_comments(self.test_input)
-    blocks = findifelse.extract_blocks(cleaned_input)
-    self.assertEqual(blocks[1],
+    blocks = findifelse.extract_blocks(self.test_input)
+    self.assertEqual(blocks[1]['condition_len'], 10)
+    self.assertEqual(blocks[1]['condition'], '(value == 1)')
+    self.assertEqual(blocks[1]['content'],
                       self.answers['if_else_if_test']['output'].rstrip('\n'))
 
   def test_extract_nested_if_else_block(self):
-    cleaned_input = findifelse.remove_comments(self.test_input)
-    blocks = findifelse.extract_blocks(cleaned_input)
-    self.assertEqual(blocks[2],
+    blocks = findifelse.extract_blocks(self.test_input)
+    self.assertEqual(blocks[2]['content'],
                       self.answers['nested_if_else']['output'].rstrip('\n'))
 
   def test_extract_aosp_code_block(self):
-    cleaned_input = findifelse.remove_comments(self.test_input)
-    blocks = findifelse.extract_blocks(cleaned_input)
-    self.assertEqual(strip_whitespace(blocks[5]),
+    blocks = findifelse.extract_blocks(self.test_input)
+    self.assertEqual(blocks[5]['condition_len'], 11)
+    self.assertEqual(strip_whitespace(blocks[5]['content']),
                        strip_whitespace(self.answers['aosp_code']['output'] \
                        .rstrip('\n')))
+
+  def test_extract_long_condition(self):
+    blocks = findifelse.extract_blocks(self.test_input)
+    self.assertEqual(blocks[7]['condition_len'], 119)
 
 
 if __name__ == '__main__':
