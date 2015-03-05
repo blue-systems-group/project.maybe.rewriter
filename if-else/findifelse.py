@@ -1,6 +1,11 @@
 #!/usr/bin/python
 import sys, os, io, re
 import argparse, json
+import pickle
+
+def set_default(obj):
+  if isinstance(obj, set):
+    return list(obj)
 
 class IfElseAlternative(object):
   def __init__(self, value, content):
@@ -25,7 +30,7 @@ class IfElseStatement(object):
     return {'condition': '('+self.condition+')',
             'condition_len': len(self.condition),
             'content': self.content,
-            'alternatives': [a for a in self.alternatives]}
+            'alternatives': {a for a in self.alternatives}}
 
 
 def is_block(string):
@@ -106,7 +111,7 @@ if __name__ == '__main__':
   for root, dirs, files in os.walk(args.source):
     for file in files:
       basename, ext = os.path.splitext(file)
-      if (ext in possible_entensions) and (file not in dont_parse):
+      if ext in possible_entensions:
         data_to_print = {}
         data_to_print[root+"/"+file] = []
         f = open(root+"/"+file, "r")
@@ -114,4 +119,6 @@ if __name__ == '__main__':
         blocks = extract_blocks(file_content)
         for block in blocks:
           data_to_print[root+"/"+file].append(block)
-        print json.dumps(data_to_print)
+        print json.dumps(data_to_print, default = set_default)
+        #print type(data_to_print)
+        #print json.dumps(data_to_print)
