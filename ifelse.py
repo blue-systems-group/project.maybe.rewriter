@@ -88,7 +88,8 @@ def match_to_block(match, cleaned_content, content):
     ifelse_block.ignored = True
   else:
     ifelse_block.ignored = False
-    ifelse_block.alternative = alternatives
+    for a in alternatives:
+      ifelse_block.alternatives.append(a)
   finally:
     return ifelse_block
 

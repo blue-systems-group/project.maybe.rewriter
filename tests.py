@@ -85,7 +85,7 @@ class IfElseTests(unittest.TestCase):
     for match in matches:
       self.assertEqual(match.group()[-1], "(")
 
-  def test_dump_statements(self):
+  def test_match_blocks(self):
     statements = ifelse.record_blocks(self.test_file)
     self.assertEqual(len([1 for S in statements if S and S.ignored == True]),
                      self.answers['ignore_count'])
