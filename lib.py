@@ -1,4 +1,4 @@
-import re,json
+import re,json,os
 
 def find_block(content, start, delimiter_left, delimiter_right):
   def is_block(string, delimiter_left, delimiter_right):
@@ -71,4 +71,4 @@ class ProjectsMap(object):
   def link_file(self, filename, number):
     match = self.map_file(filename)
     assert match
-    return self.BASE_LINK.format(project=match['name'], filename=filename, linenumber=number)
+    return self.BASE_LINK.format(project=match['name'], filename=os.path.relpath(filename, match['path']), linenumber=number)
