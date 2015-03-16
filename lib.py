@@ -53,7 +53,7 @@ def clean_string(string, remove_newlines=False):
   return string
 
 class ProjectsMap(object):
-  BASE_LINK = "http://platform.phone-lab.org:8080/gitweb?p=platform/{project}.git;a=blob;f={filename};hb=refs/heads/phonelab/android-4.4.4_r1/develop#l{linenumber}"
+  BASE_LINK = "http://platform.phone-lab.org:8080/gitweb?p={project}.git;a=blob;f={filename};hb=refs/heads/phonelab/android-4.4.4_r1/develop#l{linenumber}"
 
   def __init__(self, projects_file):
     self.projects = []
