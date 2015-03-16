@@ -89,8 +89,12 @@ class IfElseTests(unittest.TestCase):
     statements = ifelse.record_blocks(self.test_file)
     self.assertEqual(len([1 for S in statements if S and S.ignored == True]),
                      self.answers['ignore_count'])
+    self.assertEqual(len([1 for S in statements if S and S.ignored == False]),
+                     self.answers['correct_count'])
     self.assertEqual(sorted([S.line for S in statements if S and S.ignored == True]),
                      sorted(self.answers['ignored_lines']))
+    self.assertEqual(sorted([S.line for S in statements if S and S.ignored == False]),
+                     sorted(self.answers['correct_lines']))
 
 if __name__ == '__main__':
   unittest.main()

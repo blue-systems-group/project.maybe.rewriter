@@ -76,7 +76,7 @@ def record_assignments(content, statements=None):
     label = eval(content[match.start('label'):match.end('label')].strip())
     maybe_statement = MaybeStatement(MaybeStatement.ASSIGNMENT, match.start(), label, match.end())
     maybe_statement.content = content[match.start():match.end()]
-    maybe_statement.line = len(content[:match.start()].splitlines()) + 1
+    maybe_statement.line = len(content[:match.end()].splitlines())
     assert not statements.has_key(maybe_statement.label)
     alternative_start = match.start('alternatives')
     alternatives = content[match.start('alternatives'):match.end('alternatives')]

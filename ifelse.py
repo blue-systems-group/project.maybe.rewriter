@@ -20,13 +20,13 @@ class IfElseAlternative(object):
             'end': self.end}
 
 class IfElseStatement(object):
-  def __init__(self, start, line, end=None, ignored=False):
+  def __init__(self, start, line, end=None, ignored=False, content=None):
     self.start = start
     self.line = line
     self.end = end
     self.ignored = ignored
+    self.content = content
     self.alternatives = []
-    self.content = None
 
   def __repr__(self):
     return "{{{maybe_type} {start}:{end} {label}}}".format(maybe_type=self.maybe_type,
@@ -43,14 +43,54 @@ class IfElseStatement(object):
 BLOCK_START_PATTERN = re.compile(r"""\bif\s*\(""")
 ELSE_PREVIOUS_PATTERN = re.compile(r"""^\s+esle""")
 BRACE_PATTERN = re.compile(r"""^\s*{""")
+IFELSE_START_PATTERN = re.compile(r"""^\s*else\s+if\s*\(""")
+ELSE_START_PATTERN = re.compile(r"""^\s*else\s*{""")
+
+class BrokenStatement(Exception):
+  pass
 
 def match_to_block(match, cleaned_content, content):
   assert cleaned_content[match.end() - 1] == "(", "Block starts with %s" % (cleaned_content[match.end() - 1],)
   condition_end, condition_buffer = find_block(cleaned_content, match.end() - 1, "(", ")")
+  block_content = content[match.end():condition_end - 1]
   brace_match = BRACE_PATTERN.match(cleaned_content[condition_end:])
-  line = len(content[:match.start()].splitlines()) + 1
+  line = len(content[:match.end()].splitlines())
+  ifelse_block = IfElseStatement(match.start(), line, content=block_content)
   if not brace_match:
-    return IfElseStatement(match.start(), line, ignored=True)
+    ifelse_block.ignored = True
+    return ifelse_block
+  
+  buffer_start = condition_end + brace_match.end() - 1
+  alternatives = [] 
+  try:
+    while True:
+      buffer_end, block_buffer = find_block(cleaned_content, buffer_start, "{", "}")
+      
+      alternatives.append(IfElseAlternative(ifelse_block.start,
+                                            buffer_start + 1,
+                                            buffer_end,
+                                            content[buffer_start + 1:buffer_end - 1]))
+      
+      ifelse_match = IFELSE_START_PATTERN.match(cleaned_content[buffer_end:])
+      else_match = ELSE_START_PATTERN.match(cleaned_content[buffer_end:])
+
+      if ifelse_match != None:
+        condition_end, unused = find_block(cleaned_content, buffer_end + ifelse_match.end() - 1, "(", ")")
+        brace_match = BRACE_PATTERN.match(cleaned_content[condition_end:])
+        if not brace_match:
+          raise BrokenStatement()
+        buffer_start = condition_end + brace_match.end() - 1
+      elif else_match != None:
+        buffer_start = buffer_end + else_match.end() - 1
+      else:
+        break
+  except BrokenStatement:
+    ifelse_block.ignored = True
+  else:
+    ifelse_block.ignored = False
+    ifelse_block.alternative = alternatives
+  finally:
+    return ifelse_block
 
 def find_blocks(content):
   matches = []

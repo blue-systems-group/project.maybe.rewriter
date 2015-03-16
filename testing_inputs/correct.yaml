@@ -71,3 +71,11 @@ ifelse:
   ignored_lines:
     - 11
     - 36
+  correct_count: 6
+  correct_lines:
+    - 1
+    - 14
+    - 17
+    - 20
+    - 21
+    - 28
