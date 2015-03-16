@@ -70,5 +70,5 @@ class ProjectsMap(object):
 
   def link_file(self, filename, number):
     match = self.map_file(filename)
-    assert match
+    assert match, "%s does not match a project" % (filename,)
     return self.BASE_LINK.format(project=match['name'], filename=os.path.relpath(filename, match['path']), linenumber=number), match
