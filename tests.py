@@ -99,6 +99,8 @@ class IfElseTests(unittest.TestCase):
       contents = open(java_file, 'rU').read()
       statements = ifelse.record_blocks(contents)
       filename = os.path.basename(java_file)
+      if not self.answers.has_key(filename):
+        continue
       answers = self.answers[filename]
       ignored_count = ifelse.IfElseStatement.ignored_count(statements)
       self.assertEqual(ignored_count, answers['ignored_count'])

@@ -11,7 +11,7 @@ def find_block(content, start, delimiter_left, delimiter_right):
 
   while True:
     buffer_increment = content[search_start:].find(delimiter_right)
-    assert buffer_increment != -1, "Unmatched delimiters."
+    assert buffer_increment != -1, "Unmatched delimiters: %s" % (content[start:start+100])
     buffer_end += buffer_increment + 1
     block_buffer = content[start:buffer_end]
     if is_block(block_buffer, delimiter_left, delimiter_right):
@@ -40,11 +40,11 @@ def clean_string(string, remove_newlines=False):
     return '"%s"' % (" " * len(match.group('quoted')),)
   
   initial_length = len(string)
-
-  string = MULTI_LINE_COMMENTS_PATTERN.sub(equivalent_whitespace, string)
-  string = SINGLE_LINE_COMMENTS_PATTERN.sub(equivalent_whitespace, string)
+  
   string = SINGLE_QUOTE_STRING_PATTERN.sub(single_quotes, string)
   string = DOUBLE_QUOTE_STRING_PATTERN.sub(double_quotes, string)
+  string = MULTI_LINE_COMMENTS_PATTERN.sub(equivalent_whitespace, string)
+  string = SINGLE_LINE_COMMENTS_PATTERN.sub(equivalent_whitespace, string)
   if remove_newlines:
     string = WHITESPACE_PATTERN.sub(equivalent_whitespace, string)
     assert string.find("\n") == -1, "Newlines left in string"
