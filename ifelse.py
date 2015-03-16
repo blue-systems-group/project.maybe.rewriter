@@ -150,7 +150,7 @@ def main(args):
       writer.writerows(ignored)
     except MissingProject:
       pass
-    except:
+    except Exception, e:
       print >>sys.stderr, "SKIPPING %s: %s" % (input_file, e)
       writer.writerow(["S", input_file])
   
