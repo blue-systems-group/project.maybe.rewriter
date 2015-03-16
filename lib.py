@@ -61,8 +61,7 @@ class ProjectsMap(object):
       self.projects.append(json.loads(line.strip().replace("'", '"')))
 
   def map_file(self, filename):
-    matches = [p for p in self.projects if filename.startswith(p['path'])]
-    assert len(matches) <= 1, "More than one project match."
+    matches = sorted([p for p in self.projects if filename.startswith(p['path'])], key=lambda p: len(p['path']))[::-1]
     if len(matches) == 0:
       return None
     else:
