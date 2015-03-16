@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import re,unittest,os,yaml,rewrite,json
+import re,unittest,os,yaml,rewrite,json,lib
 
 TESTING_INPUTS = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'testing_inputs')
 
@@ -69,8 +69,8 @@ class RegexTests(unittest.TestCase):
 		self.test_file = open(os.path.join(TESTING_INPUTS, 'block.java'), 'rU').read()
 		self.answers = yaml.load(open(os.path.join(TESTING_INPUTS, 'correct.yaml'), 'rU'))
 
-  def test_remove_comments_and_strings(self):
-    string = rewrite.remove_comments_and_strings(self.test_file).rstrip('\n')
+  def test_clean_string(self):
+    string = lib.clean_string(self.test_file).rstrip('\n')
     self.assertEqual(strip_quotes(strip_whitespace(string)), self.answers['is_block_test'])
 
 if __name__ == '__main__':

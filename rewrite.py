@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import re,random,json,argparse,os,sys,hashlib
-from lib import find_block
+from lib import find_block, clean_string
 
 class MaybeAlternative(object):
   def __init__(self, value, offset, start, end, content):
@@ -55,33 +55,6 @@ class MaybeStatement(object):
   def is_block(self):
     return self.maybe_type == MaybeStatement.BLOCK
 
-def remove_comments_and_strings(string):
-  MULTI_LINE_COMMENTS_PATTERN= re.compile(r"""(?s)/\*.*?\*/""") 
-  SINGLE_LINE_COMMENTS_PATTERN= re.compile(r"""(?m)//.*$""") 
-
-  SINGLE_QUOTE_STRING_PATTERN= re.compile(r"""'(?P<quoted>(?:\\'|[^'\n])*?)'""")
-  DOUBLE_QUOTE_STRING_PATTERN= re.compile(r'"(?P<quoted>(?:\\"|[^"\n])*?)"')
-  
-  def equivalent_whitespace(match):
-    return " " * len(match.group())
-
-  def single_quotes(match):
-    assert len(match.group()) == (len(match.group('quoted')) + 2), "Length mismatch: %d %d" % (len(match.group()), len(match.group('quoted')))
-    return "'%s'" % (" " * len(match.group('quoted')),)
-  
-  def double_quotes(match):
-    assert len(match.group()) == (len(match.group('quoted')) + 2), "Length mismatch: %d %d" % (len(match.group()), len(match.group('quoted')))
-    return '"%s"' % (" " * len(match.group('quoted')),)
-  
-  initial_length = len(string)
-
-  string = MULTI_LINE_COMMENTS_PATTERN.sub(equivalent_whitespace, string)
-  string = SINGLE_LINE_COMMENTS_PATTERN.sub(equivalent_whitespace, string)
-  string = SINGLE_QUOTE_STRING_PATTERN.sub(single_quotes, string)
-  string = DOUBLE_QUOTE_STRING_PATTERN.sub(double_quotes, string)
-
-  assert len(string) == initial_length, "Cleaning changed string length."
-  return string
 
 ASSIGNMENT_PATTERN = re.compile(r"""(?xum)
                                 ^(?P<indent>[^\S\n]*)
@@ -121,7 +94,7 @@ def record_assignments(content, statements=None):
   
   if not statements:
     statements = {}
-  cleaned_content = remove_comments_and_strings(content)
+  cleaned_content = clean_string(content)
   
   for match in ASSIGNMENT_PATTERN.finditer(cleaned_content):
     record_assignment(match)
@@ -153,7 +126,7 @@ def replace_assignments(content, standard_indent="  "):
   labels = {}
 
   while True:
-    cleaned_content = remove_comments_and_strings(content)
+    cleaned_content = clean_string(content)
     assignment_match = ASSIGNMENT_PATTERN.search(cleaned_content)
     if assignment_match:
       content = replace_assignment(assignment_match, content, labels)
@@ -210,7 +183,7 @@ default: {{{contents}{indent}if ({name} != 0) {{ badMaybeAlternative("{label}", 
 def record_blocks(content, statements=None):
   if not statements:
     statements = {}
-  cleaned_content = remove_comments_and_strings(content)
+  cleaned_content = clean_string(content)
   
   for match in BLOCK_START_PATTERN.finditer(cleaned_content):
     maybe_block = match_to_block(match, content)
@@ -222,7 +195,7 @@ def replace_blocks(content, standard_indent="  "):
   labels = {}
   
   while True:
-    cleaned_content = remove_comments_and_strings(content)
+    cleaned_content = clean_string(content)
     block_match = BLOCK_START_PATTERN.search(cleaned_content)
     if block_match:
       maybe_block = match_to_block(block_match, content)

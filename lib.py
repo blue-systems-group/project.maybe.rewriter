@@ -1,3 +1,5 @@
+import re
+
 def find_block(content, start, delimiter_left, delimiter_right):
   def is_block(string, delimiter_left, delimiter_right):
     return (string.count(delimiter_left) - string.count(delimiter_right) == 0)
@@ -16,3 +18,31 @@ def find_block(content, start, delimiter_left, delimiter_right):
       return buffer_end, block_buffer
     else:
       search_start += buffer_increment + 1
+
+def clean_string(string):
+  MULTI_LINE_COMMENTS_PATTERN= re.compile(r"""(?s)/\*.*?\*/""") 
+  SINGLE_LINE_COMMENTS_PATTERN= re.compile(r"""(?m)//.*$""") 
+
+  SINGLE_QUOTE_STRING_PATTERN= re.compile(r"""'(?P<quoted>(?:\\'|[^'\n])*?)'""")
+  DOUBLE_QUOTE_STRING_PATTERN= re.compile(r'"(?P<quoted>(?:\\"|[^"\n])*?)"')
+  
+  def equivalent_whitespace(match):
+    return " " * len(match.group())
+
+  def single_quotes(match):
+    assert len(match.group()) == (len(match.group('quoted')) + 2), "Length mismatch: %d %d" % (len(match.group()), len(match.group('quoted')))
+    return "'%s'" % (" " * len(match.group('quoted')),)
+  
+  def double_quotes(match):
+    assert len(match.group()) == (len(match.group('quoted')) + 2), "Length mismatch: %d %d" % (len(match.group()), len(match.group('quoted')))
+    return '"%s"' % (" " * len(match.group('quoted')),)
+  
+  initial_length = len(string)
+
+  string = MULTI_LINE_COMMENTS_PATTERN.sub(equivalent_whitespace, string)
+  string = SINGLE_LINE_COMMENTS_PATTERN.sub(equivalent_whitespace, string)
+  string = SINGLE_QUOTE_STRING_PATTERN.sub(single_quotes, string)
+  string = DOUBLE_QUOTE_STRING_PATTERN.sub(double_quotes, string)
+
+  assert len(string) == initial_length, "Cleaning changed string length."
+  return string
