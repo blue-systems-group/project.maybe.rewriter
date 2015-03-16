@@ -135,6 +135,7 @@ def main(args):
   files = [l.strip() for l in open(args.toparse, 'rU')]
   
   correct, ignored = [], []
+  writer = csv.writer(sys.stdout)
   
   for input_file in files:
     input_file = os.path.normpath(input_file)
@@ -145,10 +146,8 @@ def main(args):
         correct.append(["C", link, os.path.basename(input_file), input_file, statement.line, len(statement.alternatives), len(statement.content), statement.content])
       else:
         ignored.append(["I", link, os.path.basename(input_file), input_file, statement.line])
-  
-  writer = csv.writer(sys.stdout)
-  writer.writerows(correct)
-  writer.writerows(ignored)
+    writer.writerows(correct)
+    writer.writerows(ignored)
   
 if __name__=='__main__':
   parser = argparse.ArgumentParser(description='Rewrite maybe statements.')
