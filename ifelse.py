@@ -137,6 +137,7 @@ def main(args):
   correct, ignored = [], []
   
   for input_file in files:
+    input_file = os.path.normpath(input_file)
     statements = record_blocks(open(input_file, 'rU').read())
     for statement in statements:
       link = projects.link_file(input_file, statement.line)
