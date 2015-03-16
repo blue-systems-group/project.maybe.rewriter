@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import re,unittest,os,yaml,rewrite,json,lib
+import re,unittest,os,yaml,rewrite,json,lib,ifelse
 
 TESTING_INPUTS = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'testing_inputs')
 
@@ -72,6 +72,14 @@ class RegexTests(unittest.TestCase):
   def test_clean_string(self):
     string = lib.clean_string(self.test_file).rstrip('\n')
     self.assertEqual(strip_quotes(strip_whitespace(string)), self.answers['is_block_test'])
+
+class IfElseTests(unittest.TestCase):
+  def setUp(self):
+		self.test_file = open(os.path.join(TESTING_INPUTS, 'ifelse.java'), 'rU').read()
+		self.answers = yaml.load(open(os.path.join(TESTING_INPUTS, 'correct.yaml'), 'rU'))
+
+  def test_match_block(self):
+    print len(ifelse.BLOCK_START_PATTERN.findall(self.test_file))
 
 if __name__ == '__main__':
   unittest.main()
