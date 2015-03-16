@@ -70,6 +70,5 @@ class ProjectsMap(object):
 
   def link_file(self, filename, number):
     match = self.map_file(filename)
-    if not match:
-      return None
+    assert match
     return self.BASE_LINK.format(project=match['name'], filename=filename, linenumber=number)
