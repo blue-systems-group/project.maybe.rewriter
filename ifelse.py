@@ -148,7 +148,9 @@ def main(args):
           ignored.append(["I", link, project['name'], os.path.basename(input_file), input_file, statement.line])
       writer.writerows(correct)
       writer.writerows(ignored)
-    except Exception, e:
+    except lib.MissingProject:
+      pass
+    except:
       print >>sys.stderr, "SKIPPING %s: %s" % (input_file, e)
       writer.writerow(["S", input_file])
   

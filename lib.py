@@ -52,6 +52,8 @@ def clean_string(string, remove_newlines=False):
   assert len(string) == initial_length, "Cleaning changed string length."
   return string
 
+class MissingProject(Exception):
+  pass
 class ProjectsMap(object):
   BASE_LINK = "http://platform.phone-lab.org:8080/gitweb?p={project}.git;a=blob;f={filename};hb=refs/heads/phonelab/android-4.4.4_r1/develop#l{linenumber}"
 
@@ -69,5 +71,6 @@ class ProjectsMap(object):
 
   def link_file(self, filename, number):
     match = self.map_file(filename)
-    assert match, "%s does not match a project" % (filename,)
+    if not match:
+      raise MissingProject("%s does not match a project" % (filename,))
     return self.BASE_LINK.format(project=match['name'], filename=os.path.relpath(filename, match['path']), linenumber=number), match
