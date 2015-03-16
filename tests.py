@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import re,unittest,os,yaml,rewrite,json,lib,ifelse,glob
+import re,unittest,os,yaml,rewrite,json,lib,ifelse,glob,sys
 
 TESTING_INPUTS = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'testing_inputs')
 
@@ -116,7 +116,20 @@ class IfElseTests(unittest.TestCase):
     class Args(object):
       def __init__(self, toparse):
         self.toparse = toparse
-    ifelse.main(Args('testing_inputs/list.in'))
+    old_stdout = sys.stdout
+    try:
+      sys.stdout = open(os.devnull, 'w')
+      ifelse.main(Args('testing_inputs/list.in'))
+    finally:
+      sys.stdout = old_stdout
+
+class ProjectsTests(unittest.TestCase):
+  def test(self):
+    projects = lib.ProjectsMap(os.path.join(TESTING_INPUTS, 'projects.txt'))
+    
+    self.assertEqual(projects.map_file("doesnt/exist"), None)
+    self.assertEqual(projects.map_file("bionic/whatever")['name'], 'platform/bionic')
+    self.assertEqual(projects.map_file("prebuilts/clang/linux-x86/host/3.3")['groups'], 'linux')
 
 if __name__ == '__main__':
   unittest.main()

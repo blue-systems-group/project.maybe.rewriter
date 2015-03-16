@@ -1,4 +1,4 @@
-import re
+import re,json
 
 def find_block(content, start, delimiter_left, delimiter_right):
   def is_block(string, delimiter_left, delimiter_right):
@@ -51,3 +51,17 @@ def clean_string(string, remove_newlines=False):
 
   assert len(string) == initial_length, "Cleaning changed string length."
   return string
+
+class ProjectsMap(object):
+  def __init__(self, projects_file):
+    self.projects = []
+    for line in open(projects_file, 'rU'):
+      self.projects.append(json.loads(line.strip().replace("'", '"')))
+
+  def map_file(self, filename):
+    matches = [p for p in self.projects if filename.startswith(p['path'])]
+    assert len(matches) <= 1, "More than one project match."
+    if len(matches) == 0:
+      return None
+    else:
+      return matches[0]
