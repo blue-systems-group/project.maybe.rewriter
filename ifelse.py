@@ -1,5 +1,5 @@
 import re,os
-from lib import clean_string, find_block
+from lib import clean_string, find_block, ProjectsMap
 
 class IfElseAlternative(object):
   def __init__(self, offset, start, end, content):
@@ -125,23 +125,37 @@ def record_blocks(content, statements=None):
     statements.append(if_else_block)
   return statements
 
-CORRECT_FORMAT = """{link}\t{path}\t{filename}\t{alternative_count}\t{condition_length}"""
+CORRECT_FORMAT = """C\t{link}\t{path}\t{filename}\t{line}\t{alternative_count}\t{condition_length}"""
+IGNORED_FORMAT = """I\t{link}\t{path}\t{filename}\t{line}"""
 
 def main(args):
+  projects = ProjectsMap(args.projects)
   files = [l.strip() for l in open(args.toparse, 'rU')]
-  correct = []
-  ignored = []
+  
+  correct, ignored = [], []
+  
   for input_file in files:
     statements = record_blocks(open(input_file, 'rU').read())
-    for statement in IfElseStatement.correct(statements):
-      correct.append(CORRECT_FORMAT.format(path=os.path.basename(input_file),
-                                           filename=input_file,
-                                           alternative_count=len(statement.alternatives),
-                                           condition_length=len(statement.content)))
+    for statement in statements:
+      link = projects.link_file(input_file, statement.line)
+      if not statement.ignored:
+        correct.append(CORRECT_FORMAT.format(link=link,
+                                             path=os.path.basename(input_file),
+                                             filename=input_file,
+                                             line=statement.line,
+                                             alternative_count=len(statement.alternatives),
+                                             condition_length=len(statement.content)))
+      else:
+        ignored.append(IGNORED_FORMAT.format(link=link,
+                                             path=os.path.basename(input_file),
+                                             filename=input_file,
+                                             line=statement.line))
   print "\n".join(correct)
+  print "\n".join(ignored)
   
 if __name__=='__main__':
   parser = argparse.ArgumentParser(description='Rewrite maybe statements.')
   parser.add_argument('toparse', type=str, help="List of files to parse, relative to current directory.")
+  parser.add_argument('projects', type=str, help="Filename to project mapping for files.")
   args = parser.parse_args()
   main(args)

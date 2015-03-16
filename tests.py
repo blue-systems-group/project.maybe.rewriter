@@ -112,20 +112,23 @@ class IfElseTests(unittest.TestCase):
         self.assertEqual([len(S.alternatives) for S in ifelse.IfElseStatement.correct(statements)],
                          answers['correct_alternative_count'])
 
-  def test_main(self):
+  def test_main(self, verbose=True):
     class Args(object):
-      def __init__(self, toparse):
+      def __init__(self, toparse, projects):
         self.toparse = toparse
+        self.projects = projects
+    
     old_stdout = sys.stdout
     try:
-      sys.stdout = open(os.devnull, 'w')
-      ifelse.main(Args('testing_inputs/list.in'))
+      if not verbose:
+        sys.stdout = open(os.devnull, 'w')
+      ifelse.main(Args('testing_inputs/list.in', 'testing_inputs/projects.txt'))
     finally:
       sys.stdout = old_stdout
 
 class ProjectsTests(unittest.TestCase):
   def test(self):
-    projects = lib.ProjectsMap(os.path.join(TESTING_INPUTS, 'projects.txt'))
+    projects = lib.ProjectsMap(os.path.join(TESTING_INPUTS, 'aosp_projects.txt'))
     self.assertEqual(projects.map_file("doesnt/exist"), None)
     self.assertEqual(projects.map_file("bionic/whatever")['name'], 'platform/bionic')
     self.assertEqual(projects.map_file("prebuilts/clang/linux-x86/host/3.3")['groups'], 'linux')
