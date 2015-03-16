@@ -125,7 +125,7 @@ def record_blocks(content, statements=None):
     statements.append(if_else_block)
   return statements
 
-CORRECT_FORMAT = """{path}\t{filename}\t{alternative_count}\t{condition_length}"""
+CORRECT_FORMAT = """{link}\t{path}\t{filename}\t{alternative_count}\t{condition_length}"""
 
 def main(args):
   files = [l.strip() for l in open(args.toparse, 'rU')]

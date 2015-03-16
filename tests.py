@@ -126,7 +126,6 @@ class IfElseTests(unittest.TestCase):
 class ProjectsTests(unittest.TestCase):
   def test(self):
     projects = lib.ProjectsMap(os.path.join(TESTING_INPUTS, 'projects.txt'))
-    
     self.assertEqual(projects.map_file("doesnt/exist"), None)
     self.assertEqual(projects.map_file("bionic/whatever")['name'], 'platform/bionic')
     self.assertEqual(projects.map_file("prebuilts/clang/linux-x86/host/3.3")['groups'], 'linux')

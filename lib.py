@@ -65,3 +65,9 @@ class ProjectsMap(object):
       return None
     else:
       return matches[0]
+
+  def link_file(self, filename):
+    match = self.map_file(filename)
+    if not match:
+      return None
+
