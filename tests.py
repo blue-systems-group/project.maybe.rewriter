@@ -105,6 +105,13 @@ class IfElseTests(unittest.TestCase):
       if ignored_count > 0:
         self.assertEqual(sorted([S.line for S in ifelse.IfElseStatement.ignored(statements)]),
                          sorted(answers['ignored_lines']))
+      self.assertEqual(ifelse.IfElseStatement.correct_count(statements), answers['correct_count'])
+      self.assertEqual(sorted([S.line for S in ifelse.IfElseStatement.correct(statements)]),
+                       sorted(answers['correct_lines']))
+      if answers.has_key('correct_alternative_count'):
+        self.assertEqual([len(S.alternatives) for S in ifelse.IfElseStatement.correct(statements)],
+                         answers['correct_alternative_count'])
+
 
 if __name__ == '__main__':
   unittest.main()

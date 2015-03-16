@@ -81,7 +81,7 @@ ifelse:
     - 28
   "Sensor.java":
     ignored_count: 0
-    correct-count: 4
+    correct_count: 4
     correct_lines:
       - 273
       - 278
@@ -94,7 +94,7 @@ ifelse:
       - 1
   "LinkProperties.java":
     ignored_count: 6
-    correct-count: 21
+    correct_count: 21
     correct_lines:
       - 103
       - 173
@@ -126,7 +126,7 @@ ifelse:
       - 553
   "MediaRouteControllerDialog.java":
     ignored_count: 0
-    correct-count: 18
+    correct_count: 18
     correct_lines:
       - 117
       - 119
@@ -146,3 +146,22 @@ ifelse:
       - 273
       - 274
       - 302
+    correct_alternative_count:
+      - 1
+      - 1
+      - 1
+      - 2
+      - 1
+      - 1
+      - 1
+      - 2
+      - 1
+      - 1
+      - 1
+      - 1
+      - 2
+      - 1
+      - 1
+      - 1
+      - 2
+      - 1
