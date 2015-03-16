@@ -68,3 +68,6 @@ is_block_test: 0123456789012345
 ifelse:
   statement_count: 8
   ignore_count: 2
+  ignored_lines:
+    - 11
+    - 36
