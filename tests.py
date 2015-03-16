@@ -76,10 +76,13 @@ class RegexTests(unittest.TestCase):
 class IfElseTests(unittest.TestCase):
   def setUp(self):
 		self.test_file = open(os.path.join(TESTING_INPUTS, 'ifelse.java'), 'rU').read()
-		self.answers = yaml.load(open(os.path.join(TESTING_INPUTS, 'correct.yaml'), 'rU'))
+		self.answers = yaml.load(open(os.path.join(TESTING_INPUTS, 'correct.yaml'), 'rU'))['ifelse']
 
   def test_match_block(self):
-    print len(ifelse.BLOCK_START_PATTERN.findall(self.test_file))
+    matches = ifelse.BLOCK_START_PATTERN.findall(self.test_file)
+    self.assertEqual(self.answers['statement_count'], len(matches))
+    for match in matches:
+      self.assertEqual(match[-1], "(")
 
 if __name__ == '__main__':
   unittest.main()
