@@ -19,12 +19,14 @@ def find_block(content, start, delimiter_left, delimiter_right):
     else:
       search_start += buffer_increment + 1
 
-def clean_string(string):
-  MULTI_LINE_COMMENTS_PATTERN= re.compile(r"""(?s)/\*.*?\*/""") 
-  SINGLE_LINE_COMMENTS_PATTERN= re.compile(r"""(?m)//.*$""") 
+MULTI_LINE_COMMENTS_PATTERN = re.compile(r"""(?s)/\*.*?\*/""") 
+SINGLE_LINE_COMMENTS_PATTERN = re.compile(r"""(?m)//.*$""") 
 
-  SINGLE_QUOTE_STRING_PATTERN= re.compile(r"""'(?P<quoted>(?:\\'|[^'\n])*?)'""")
-  DOUBLE_QUOTE_STRING_PATTERN= re.compile(r'"(?P<quoted>(?:\\"|[^"\n])*?)"')
+SINGLE_QUOTE_STRING_PATTERN = re.compile(r"""'(?P<quoted>(?:\\'|[^'\n])*?)'""")
+DOUBLE_QUOTE_STRING_PATTERN = re.compile(r'"(?P<quoted>(?:\\"|[^"\n])*?)"')
+WHITESPACE_PATTERN = re.compile(r"""(?m)\s+""")
+
+def clean_string(string, remove_newlines=False):
   
   def equivalent_whitespace(match):
     return " " * len(match.group())
@@ -43,6 +45,9 @@ def clean_string(string):
   string = SINGLE_LINE_COMMENTS_PATTERN.sub(equivalent_whitespace, string)
   string = SINGLE_QUOTE_STRING_PATTERN.sub(single_quotes, string)
   string = DOUBLE_QUOTE_STRING_PATTERN.sub(double_quotes, string)
+  if remove_newlines:
+    string = WHITESPACE_PATTERN.sub(equivalent_whitespace, string)
+    assert string.find("\n") == -1, "Newlines left in string"
 
   assert len(string) == initial_length, "Cleaning changed string length."
   return string

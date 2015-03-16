@@ -79,10 +79,14 @@ class IfElseTests(unittest.TestCase):
 		self.answers = yaml.load(open(os.path.join(TESTING_INPUTS, 'correct.yaml'), 'rU'))['ifelse']
 
   def test_match_block(self):
-    matches = ifelse.BLOCK_START_PATTERN.findall(self.test_file)
+    cleaned_content = lib.clean_string(self.test_file, remove_newlines=True)
+    matches = ifelse.find_blocks(cleaned_content)
     self.assertEqual(self.answers['statement_count'], len(matches))
     for match in matches:
-      self.assertEqual(match[-1], "(")
+      self.assertEqual(match.group()[-1], "(")
+
+  def test_dump_statements(self):
+    statements = ifelse.record_blocks(self.test_file)
 
 if __name__ == '__main__':
   unittest.main()
