@@ -112,6 +112,11 @@ class IfElseTests(unittest.TestCase):
         self.assertEqual([len(S.alternatives) for S in ifelse.IfElseStatement.correct(statements)],
                          answers['correct_alternative_count'])
 
+  def test_main(self):
+    class Args(object):
+      def __init__(self, toparse):
+        self.toparse = toparse
+    ifelse.main(Args('testing_inputs/list.in'))
 
 if __name__ == '__main__':
   unittest.main()

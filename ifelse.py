@@ -1,4 +1,4 @@
-import re
+import re,os
 from lib import clean_string, find_block
 
 class IfElseAlternative(object):
@@ -18,7 +18,7 @@ class IfElseAlternative(object):
     return {'value': self.value,
             'start': self.start,
             'end': self.end}
-
+  
 class IfElseStatement(object):
   def __init__(self, start, line, end=None, ignored=False, content=None):
     self.start = start
@@ -49,12 +49,10 @@ class IfElseStatement(object):
 
   @property
   def as_dict(self):
-    return {'type': self.maybe_type,
-            'label': self.label,
-            'content': self.content,
+    return {'content': self.content,
             'line': self.line,
             'alternatives': [a.as_dict for a in self.alternatives]}
-
+  
 BLOCK_START_PATTERN = re.compile(r"""\bif\s*\(""")
 ELSE_PREVIOUS_PATTERN = re.compile(r"""^\s+esle""")
 BRACE_PATTERN = re.compile(r"""^\s*{""")
@@ -126,3 +124,24 @@ def record_blocks(content, statements=None):
     if_else_block = match_to_block(match, cleaned_content, content)
     statements.append(if_else_block)
   return statements
+
+CORRECT_FORMAT = """{path}\t{filename}\t{alternative_count}\t{condition_length}"""
+
+def main(args):
+  files = [l.strip() for l in open(args.toparse, 'rU')]
+  correct = []
+  ignored = []
+  for input_file in files:
+    statements = record_blocks(open(input_file, 'rU').read())
+    for statement in IfElseStatement.correct(statements):
+      correct.append(CORRECT_FORMAT.format(path=os.path.basename(input_file),
+                                           filename=input_file,
+                                           alternative_count=len(statement.alternatives),
+                                           condition_length=len(statement.content)))
+  print "\n".join(correct)
+  
+if __name__=='__main__':
+  parser = argparse.ArgumentParser(description='Rewrite maybe statements.')
+  parser.add_argument('toparse', type=str, help="List of files to parse, relative to current directory.")
+  args = parser.parse_args()
+  main(args)
