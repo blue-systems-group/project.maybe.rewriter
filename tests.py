@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import re,unittest,os,yaml,rewrite,json,lib,ifelse
+import re,unittest,os,yaml,rewrite,json,lib,ifelse,glob
 
 TESTING_INPUTS = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'testing_inputs')
 
@@ -87,14 +87,24 @@ class IfElseTests(unittest.TestCase):
 
   def test_match_blocks(self):
     statements = ifelse.record_blocks(self.test_file)
-    self.assertEqual(len([1 for S in statements if S and S.ignored == True]),
-                     self.answers['ignore_count'])
-    self.assertEqual(len([1 for S in statements if S and S.ignored == False]),
-                     self.answers['correct_count'])
-    self.assertEqual(sorted([S.line for S in statements if S and S.ignored == True]),
+    self.assertEqual(ifelse.IfElseStatement.ignored_count(statements), self.answers['ignore_count'])
+    self.assertEqual(ifelse.IfElseStatement.correct_count(statements), self.answers['correct_count'])
+    self.assertEqual(sorted([S.line for S in ifelse.IfElseStatement.ignored(statements)]),
                      sorted(self.answers['ignored_lines']))
-    self.assertEqual(sorted([S.line for S in statements if S and S.ignored == False]),
+    self.assertEqual(sorted([S.line for S in ifelse.IfElseStatement.correct(statements)]),
                      sorted(self.answers['correct_lines']))
+
+  def test_aosp_sources(self):
+    for i, java_file in enumerate(glob.glob(os.path.join(TESTING_INPUTS, "ifelse", "*.java"))):
+      contents = open(java_file, 'rU').read()
+      statements = ifelse.record_blocks(contents)
+      filename = os.path.basename(java_file)
+      answers = self.answers[filename]
+      ignored_count = ifelse.IfElseStatement.ignored_count(statements)
+      self.assertEqual(ignored_count, answers['ignored_count'])
+      if ignored_count > 0:
+        self.assertEqual(sorted([S.line for S in ifelse.IfElseStatement.ignored(statements)]),
+                         sorted(answers['ignored_lines']))
 
 if __name__ == '__main__':
   unittest.main()

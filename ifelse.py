@@ -29,9 +29,24 @@ class IfElseStatement(object):
     self.alternatives = []
 
   def __repr__(self):
-    return "{{{maybe_type} {start}:{end} {label}}}".format(maybe_type=self.maybe_type,
-                                                           start=self.start, end=self.end,
-                                                           label=self.label)
+    return "{{{start}:{end}}}".format(start=self.start, end=self.end)
+
+  @classmethod
+  def ignored(cls, statements):
+    return [S for S in statements if S.ignored]
+  
+  @classmethod
+  def correct(cls, statements):
+    return [S for S in statements if not S.ignored]
+
+  @classmethod
+  def ignored_count(cls, statements):
+    return len(cls.ignored(statements))
+  
+  @classmethod
+  def correct_count(cls, statements):
+    return len(cls.correct(statements))
+
   @property
   def as_dict(self):
     return {'type': self.maybe_type,
