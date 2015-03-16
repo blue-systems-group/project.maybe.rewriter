@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import re,os,argparse,csv,sys
-from lib import clean_string, find_block, ProjectsMap
+from lib import clean_string, find_block, ProjectsMap, MissingProject
 
 class IfElseAlternative(object):
   def __init__(self, offset, start, end, content):
@@ -148,7 +148,7 @@ def main(args):
           ignored.append(["I", link, project['name'], os.path.basename(input_file), input_file, statement.line])
       writer.writerows(correct)
       writer.writerows(ignored)
-    except lib.MissingProject:
+    except MissingProject:
       pass
     except:
       print >>sys.stderr, "SKIPPING %s: %s" % (input_file, e)
