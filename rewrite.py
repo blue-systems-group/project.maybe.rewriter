@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import re,random,json,argparse,os,sys,hashlib
+from lib import find_block
 
 class MaybeAlternative(object):
   def __init__(self, value, offset, start, end, content):
@@ -160,9 +161,6 @@ def replace_assignments(content, standard_indent="  "):
       break
   return content, labels
 
-def is_block(string):
-  return (string.count("{") - string.count("}") == 0)
-
 def match_to_block(match, content):
   label = eval(content[match.start('label'):match.end('label')].strip())
   maybe_block = MaybeStatement(MaybeStatement.BLOCK, match.start(), label)
@@ -171,24 +169,13 @@ def match_to_block(match, content):
   
   value = 0
   while True:
-    buffer_end = buffer_start
-    search_start = buffer_start
-    
-    while True:
-      buffer_increment = content[search_start:].find("}")
-      assert buffer_increment != -1, "Unmatched braces."
-      buffer_end += buffer_increment + 1
-      block_buffer = content[buffer_start:buffer_end]
-      if is_block(block_buffer):
-        maybe_block.alternatives.append(MaybeAlternative(value,
-                                                         maybe_block.start,
-                                                         buffer_start + 1,
-                                                         buffer_end,
-                                                         block_buffer[1:-1]))
-        value += 1
-        break
-      else:
-        search_start += buffer_increment + 1
+    buffer_end, block_buffer = find_block(content, buffer_start, "{", "}")
+    maybe_block.alternatives.append(MaybeAlternative(value,
+                                                     maybe_block.start,
+                                                     buffer_start + 1,
+                                                     buffer_end,
+                                                     block_buffer[1:-1]))
+    value += 1
     or_match = ALTERNATIVE_START_PATTERN.match(content[buffer_end:])
     if or_match != None:
       buffer_start = buffer_end + or_match.end() - 1
