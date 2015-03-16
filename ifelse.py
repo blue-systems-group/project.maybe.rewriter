@@ -132,20 +132,19 @@ IGNORED_FORMAT = """I\t{link}\t{path}\t{filename}\t{line}"""
 
 def main(args):
   projects = ProjectsMap(args.projects)
-  files = [l.strip() for l in open(args.toparse, 'rU')]
+  files = list(set([os.path.normpath(l.strip()) for l in open(args.toparse, 'rU')]))
   
-  correct, ignored = [], []
   writer = csv.writer(sys.stdout)
   
   for input_file in files:
-    input_file = os.path.normpath(input_file)
+    correct, ignored = [], []
     statements = record_blocks(open(input_file, 'rU').read())
     for statement in statements:
-      link = projects.link_file(input_file, statement.line)
+      link, project = projects.link_file(input_file, statement.line)
       if not statement.ignored:
-        correct.append(["C", link, os.path.basename(input_file), input_file, statement.line, len(statement.alternatives), len(statement.content), statement.content])
+        correct.append(["C", link, project['name'], os.path.basename(input_file), input_file, statement.line, len(statement.alternatives), len(statement.content), statement.content])
       else:
-        ignored.append(["I", link, os.path.basename(input_file), input_file, statement.line])
+        ignored.append(["I", link, project['name'], os.path.basename(input_file), input_file, statement.line])
     writer.writerows(correct)
     writer.writerows(ignored)
   
