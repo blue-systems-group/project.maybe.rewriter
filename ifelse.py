@@ -138,15 +138,19 @@ def main(args):
   
   for input_file in files:
     correct, ignored = [], []
-    statements = record_blocks(open(input_file, 'rU').read())
-    for statement in statements:
-      link, project = projects.link_file(input_file, statement.line)
-      if not statement.ignored:
-        correct.append(["C", link, project['name'], os.path.basename(input_file), input_file, statement.line, len(statement.alternatives), len(statement.content), statement.content])
-      else:
-        ignored.append(["I", link, project['name'], os.path.basename(input_file), input_file, statement.line])
-    writer.writerows(correct)
-    writer.writerows(ignored)
+    try:
+      statements = record_blocks(open(input_file, 'rU').read())
+      for statement in statements:
+        link, project = projects.link_file(input_file, statement.line)
+        if not statement.ignored:
+          correct.append(["C", link, project['name'], os.path.basename(input_file), input_file, statement.line, len(statement.alternatives), len(statement.content), statement.content])
+        else:
+          ignored.append(["I", link, project['name'], os.path.basename(input_file), input_file, statement.line])
+      writer.writerows(correct)
+      writer.writerows(ignored)
+    except Exception, e:
+      print >>sys.stderr, "SKIPPING %s: %s" % (input_file, e)
+      writer.writerow(["S", input_file])
   
 if __name__=='__main__':
   parser = argparse.ArgumentParser(description='Rewrite maybe statements.')
