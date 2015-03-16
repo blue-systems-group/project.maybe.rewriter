@@ -66,4 +66,5 @@ is_block_test: 0123456789012345
   label: "newline_or another block test"
   alternative_count: 1
 ifelse:
-  statement_count: 7
+  statement_count: 8
+  ignore_count: 2

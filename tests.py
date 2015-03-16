@@ -87,6 +87,8 @@ class IfElseTests(unittest.TestCase):
 
   def test_dump_statements(self):
     statements = ifelse.record_blocks(self.test_file)
+    self.assertEqual(len([1 for S in statements if S and S.ignored == True]),
+                     self.answers['ignore_count'])
 
 if __name__ == '__main__':
   unittest.main()

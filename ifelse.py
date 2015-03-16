@@ -20,12 +20,13 @@ class IfElseAlternative(object):
             'end': self.end}
 
 class IfElseStatement(object):
-  def __init__(self, start, end=None):
+  def __init__(self, start, line, end=None, ignored=False):
     self.start = start
+    self.line = line
     self.end = end
+    self.ignored = ignored
     self.alternatives = []
     self.content = None
-    self.line = None
 
   def __repr__(self):
     return "{{{maybe_type} {start}:{end} {label}}}".format(maybe_type=self.maybe_type,
@@ -41,11 +42,15 @@ class IfElseStatement(object):
 
 BLOCK_START_PATTERN = re.compile(r"""\bif\s*\(""")
 ELSE_PREVIOUS_PATTERN = re.compile(r"""^\s+esle""")
-BRACE_PATTERN = re.compile(r"""\s*{""")
+BRACE_PATTERN = re.compile(r"""^\s*{""")
 
 def match_to_block(match, cleaned_content, content):
   assert cleaned_content[match.end() - 1] == "(", "Block starts with %s" % (cleaned_content[match.end() - 1],)
   condition_end, condition_buffer = find_block(cleaned_content, match.end() - 1, "(", ")")
+  brace_match = BRACE_PATTERN.match(cleaned_content[condition_end:])
+  line = len(content[:match.start()].splitlines()) + 1
+  if not brace_match:
+    return IfElseStatement(match.start(), line, ignored=True)
 
 def find_blocks(content):
   matches = []
@@ -58,9 +63,10 @@ def find_blocks(content):
 
 def record_blocks(content, statements=None):
   if not statements:
-    statements = {}
+    statements = []
   cleaned_content = clean_string(content)
   
   for match in find_blocks(cleaned_content):
-    ifelse_block = match_to_block(match, cleaned_content, content)
+    if_else_block = match_to_block(match, cleaned_content, content)
+    statements.append(if_else_block)
   return statements
