@@ -1,4 +1,6 @@
-import re,os
+#!/usr/bin/env python
+
+import re,os,argparse,csv,sys
 from lib import clean_string, find_block, ProjectsMap
 
 class IfElseAlternative(object):
@@ -139,19 +141,13 @@ def main(args):
     for statement in statements:
       link = projects.link_file(input_file, statement.line)
       if not statement.ignored:
-        correct.append(CORRECT_FORMAT.format(link=link,
-                                             path=os.path.basename(input_file),
-                                             filename=input_file,
-                                             line=statement.line,
-                                             alternative_count=len(statement.alternatives),
-                                             condition_length=len(statement.content)))
+        correct.append(["C", link, os.path.basename(input_file), input_file, statement.line, len(statement.alternatives), len(statement.content), statement.content])
       else:
-        ignored.append(IGNORED_FORMAT.format(link=link,
-                                             path=os.path.basename(input_file),
-                                             filename=input_file,
-                                             line=statement.line))
-  print "\n".join(correct)
-  print "\n".join(ignored)
+        ignored.append(["I", link, os.path.basename(input_file), input_file, statement.line])
+  
+  writer = csv.writer(sys.stdout)
+  writer.writerows(correct)
+  writer.writerows(ignored)
   
 if __name__=='__main__':
   parser = argparse.ArgumentParser(description='Rewrite maybe statements.')
