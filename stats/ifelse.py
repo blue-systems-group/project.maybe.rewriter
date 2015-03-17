@@ -7,6 +7,7 @@ NULL_PATTERN = re.compile(r""".*\bnull\b.*""")
 def main(args):
   total_count, ignore_count, single_count, null_count = 0, 0, 0, 0
   file_count = {}
+  file_line_count = {}
   writer = csv.writer(sys.stdout)
   with open(args.toparse, 'rb') as f:
     to_print = []
@@ -20,9 +21,10 @@ def main(args):
         path = row[4]
         if not file_count.has_key(path):
           file_count[path] = 0
+          file_line_count[path] = int(row[5])
         file_count[path] += 1
         
-        alternative_count = int(row[6])
+        alternative_count = int(row[7])
         if alternative_count == 1:
           single_count += 1
           continue
@@ -36,10 +38,11 @@ def main(args):
 
     writer.writerows(to_print)
     total_files = len(file_count.keys())
+    total_lines = sum(file_line_count.values())
     file_average = float(sum(file_count.values())) / len(file_count.keys())
     file_median = sorted(file_count.values())[int(len(file_count.keys()) / 2.)]
     file_max = sorted(file_count.values())[-1]
-    print >>sys.stderr, json.dumps({"total": total_count, "ignored": ignore_count, "null": null_count, "file_count": total_files, "file_average": file_average, "file_median": file_median, "file_max": file_max})
+    print >>sys.stderr, json.dumps({"total": total_count, "ignored": ignore_count, "single": single_count, "null": null_count, "file_count": total_files, "line_count": total_lines, "file_average": file_average, "file_median": file_median, "file_max": file_max})
 
 if __name__=='__main__':
   parser = argparse.ArgumentParser(description='Find if-else statements in AOSP.')
