@@ -165,3 +165,5 @@ ifelse:
       - 1
       - 2
       - 1
+timers:
+  statement_count: 6

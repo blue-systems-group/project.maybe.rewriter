@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import re,unittest,os,yaml,rewrite,json,lib,ifelse,glob,sys
+import re,unittest,os,yaml,rewrite,json,lib,ifelse,glob,sys,timers
 
 TESTING_INPUTS = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'testing_inputs')
 
@@ -79,7 +79,7 @@ class IfElseTests(unittest.TestCase):
 		self.answers = yaml.load(open(os.path.join(TESTING_INPUTS, 'correct.yaml'), 'rU'))['ifelse']
 
   def test_match_block(self):
-    cleaned_content = lib.clean_string(self.test_file, remove_newlines=True)
+    cleaned_content = lib.clean_string(self.test_file)
     matches = ifelse.find_blocks(cleaned_content)
     self.assertEqual(self.answers['statement_count'], len(matches))
     for match in matches:
@@ -114,7 +114,7 @@ class IfElseTests(unittest.TestCase):
         self.assertEqual([len(S.alternatives) for S in ifelse.IfElseStatement.correct(statements)],
                          answers['correct_alternative_count'])
 
-  def test_main(self, verbose=True):
+  def test_main(self, verbose=False):
     class Args(object):
       def __init__(self, toparse, projects):
         self.toparse = toparse
@@ -124,9 +124,19 @@ class IfElseTests(unittest.TestCase):
     try:
       if not verbose:
         sys.stdout = open(os.devnull, 'w')
-      ifelse.main(Args('testing_inputs/list.in', 'testing_inputs/projects.txt'))
+      ifelse.main(Args('testing_inputs/ifelse.in', 'testing_inputs/projects.txt'))
     finally:
       sys.stdout = old_stdout
+
+class TimerTests(unittest.TestCase):
+  def setUp(self):
+		self.test_file = open(os.path.join(TESTING_INPUTS, 'timers.java'), 'rU').read()
+		self.answers = yaml.load(open(os.path.join(TESTING_INPUTS, 'correct.yaml'), 'rU'))['timers']
+  
+  def test_match_timers(self):
+    cleaned_content = lib.clean_string(self.test_file)
+    matches = list(timers.TIMER_PATTERN.finditer(cleaned_content))
+    self.assertEqual(self.answers['statement_count'], len(matches))
 
 class ProjectsTests(unittest.TestCase):
   def test(self):

@@ -127,9 +127,6 @@ def record_blocks(content, statements=None):
     statements.append(if_else_block)
   return statements
 
-CORRECT_FORMAT = """C\t{link}\t{path}\t{filename}\t{line}\t{alternative_count}\t{condition_length}"""
-IGNORED_FORMAT = """I\t{link}\t{path}\t{filename}\t{line}"""
-
 def main(args):
   projects = ProjectsMap(args.projects)
   files = list(set([os.path.normpath(l.strip()) for l in open(args.toparse, 'rU')]))
@@ -155,7 +152,7 @@ def main(args):
       writer.writerow(["S", input_file])
   
 if __name__=='__main__':
-  parser = argparse.ArgumentParser(description='Rewrite maybe statements.')
+  parser = argparse.ArgumentParser(description='Find if-else statements in AOSP.')
   parser.add_argument('toparse', type=str, help="List of files to parse, relative to current directory.")
   parser.add_argument('projects', type=str, help="Filename to project mapping for files.")
   args = parser.parse_args()
