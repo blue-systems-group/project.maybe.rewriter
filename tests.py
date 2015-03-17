@@ -143,7 +143,7 @@ class TimerTests(unittest.TestCase):
       contents = open(java_file, 'rU').read()
       statements = timers.record_timers(contents)
   
-  def test_main(self, verbose=True):
+  def test_main(self, verbose=False):
     class Args(object):
       def __init__(self, toparse, projects):
         self.toparse = toparse

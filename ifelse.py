@@ -11,16 +11,8 @@ class IfElseAlternative(object):
     assert self.start > 0, "%d should be greater than zero" % (self.start,)
     assert self.end > 0, "%d should be greater than zero" % (self.end,)
     self.content = content
+    self.file_line_count = None
 
-  def __repr__(self):
-    return "[{start}:{end} {content}]".format(start=self.start, end=self.end, content=self.content)
-
-  @property
-  def as_dict(self):
-    return {'value': self.value,
-            'start': self.start,
-            'end': self.end}
-  
 class IfElseStatement(object):
   def __init__(self, start, line, end=None, ignored=False, content=None):
     self.start = start
@@ -29,9 +21,6 @@ class IfElseStatement(object):
     self.ignored = ignored
     self.content = content
     self.alternatives = []
-
-  def __repr__(self):
-    return "{{{start}:{end}}}".format(start=self.start, end=self.end)
 
   @classmethod
   def ignored(cls, statements):
@@ -120,10 +109,12 @@ def find_blocks(content):
 def record_blocks(content, statements=None):
   if not statements:
     statements = []
+  file_line_count = len(content.splitlines())
   cleaned_content = clean_string(content)
   
   for match in find_blocks(cleaned_content):
     if_else_block = match_to_block(match, cleaned_content, content)
+    if_else_block.file_line_count = file_line_count
     statements.append(if_else_block)
   return statements
 
@@ -140,9 +131,9 @@ def main(args):
       for statement in statements:
         link, project = projects.link_file(input_file, statement.line)
         if not statement.ignored:
-          correct.append(["C", link, project['name'], os.path.basename(input_file), input_file, statement.line, len(statement.alternatives), len(statement.content), statement.content])
+          correct.append(["C", link, project['name'], os.path.basename(input_file), input_file, statement.file_line_count, statement.line, len(statement.alternatives), len(statement.content), statement.content])
         else:
-          ignored.append(["I", link, project['name'], os.path.basename(input_file), input_file, statement.line])
+          ignored.append(["I", link, project['name'], os.path.basename(input_file), input_file, statement.file_line_count, statement.line])
       writer.writerows(correct)
       writer.writerows(ignored)
     except MissingProject:

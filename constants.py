@@ -4,20 +4,22 @@ import re,os,argparse,csv,sys
 from lib import clean_string, find_block, ProjectsMap, MissingProject
 
 class ConstantLine(object):
-  def __init__(self, line, content):
+  def __init__(self, line, content, file_line_count):
     self.line = line
     self.content = content
+    self.file_line_count = file_line_count
 
 CONSTANT_PATTERN = re.compile(r"""(?m)^.*\bstatic final int\b.*$""")
 
 def record_constants(content, statements=None):
   if not statements:
     statements = []
+  file_line_count = len(content.splitlines())
   cleaned_content = clean_string(content)
 
   for match in CONSTANT_PATTERN.finditer(content):
     line = len(content[:match.end()].splitlines())
-    statements.append(ConstantLine(line, match.group().strip()))
+    statements.append(ConstantLine(line, match.group().strip(), file_line_count))
 
   return statements
 
@@ -33,7 +35,7 @@ def main(args):
       constants = record_constants(open(input_file, 'rU').read())
       for constant in constants:
         link, project = projects.link_file(input_file, constant.line)
-        rows.append([link, project['name'], os.path.basename(input_file), input_file, constant.line, constant.content])
+        rows.append([link, project['name'], os.path.basename(input_file), input_file, constant.file_line_count, constant.line, constant.content])
       writer.writerows(rows)
     except MissingProject:
       pass

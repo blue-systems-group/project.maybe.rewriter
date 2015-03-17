@@ -4,10 +4,11 @@ import re,os,argparse,csv,sys
 from lib import clean_string, find_block, ProjectsMap, MissingProject
 
 class TimerLine(object):
-  def __init__(self, timer_type, line, content):
+  def __init__(self, timer_type, line, content, file_line_count):
     self.timer_type = timer_type
     self.line = line
     self.content = content
+    self.file_line_count = file_line_count
 
 TIMER_PATTERN = re.compile(r"""(?m)^.*(?P<timer_type>(?:\b(?:AlarmManager|PendingIntent|ScheduledThreadPoolExecutor|TimeUnit)\b)|(?:TIMEOUT|INTERVAL)).*$""")
 
@@ -16,9 +17,11 @@ def record_timers(content, statements=None):
     statements = []
   cleaned_content = clean_string(content)
 
+  file_line_count = len(content.splitlines())
+
   for match in TIMER_PATTERN.finditer(content):
     line = len(content[:match.end()].splitlines())
-    statements.append(TimerLine(match.group('timer_type').strip(), line, match.group().strip()))
+    statements.append(TimerLine(match.group('timer_type').strip(), line, match.group().strip(), file_line_count))
 
   return statements
 
@@ -34,7 +37,7 @@ def main(args):
       timers = record_timers(open(input_file, 'rU').read())
       for timer in timers:
         link, project = projects.link_file(input_file, timer.line)
-        rows.append([timer.timer_type, link, project['name'], os.path.basename(input_file), input_file, timer.line, timer.content])
+        rows.append([timer.timer_type, link, project['name'], os.path.basename(input_file), input_file, timer.file_line_count, timer.line, timer.content])
       writer.writerows(rows)
     except MissingProject:
       pass
