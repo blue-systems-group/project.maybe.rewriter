@@ -77,7 +77,6 @@ def record_assignments(content, statements=None):
     maybe_statement = MaybeStatement(MaybeStatement.ASSIGNMENT, match.start(), label, match.end())
     maybe_statement.content = content[match.start():match.end()]
     maybe_statement.line = len(content[:match.end()].splitlines())
-    assert not statements.has_key(maybe_statement.label)
     alternative_start = match.start('alternatives')
     alternatives = content[match.start('alternatives'):match.end('alternatives')]
     for value, alternative in enumerate(alternatives.split(',')):
@@ -104,7 +103,6 @@ def record_assignments(content, statements=None):
 def replace_assignments(content, standard_indent="  "):
   def replace_assignment(match, content, labels):
     label = eval(content[match.start('label'):match.end('label')].strip())
-    assert not labels.has_key(label)
     indent = match.group('indent')
     variable = match.group('variable').rstrip()
     separator = "\n{indent}}} or {{\n".format(indent=indent)
@@ -199,7 +197,6 @@ def replace_blocks(content, standard_indent="  "):
     block_match = BLOCK_START_PATTERN.search(cleaned_content)
     if block_match:
       maybe_block = match_to_block(block_match, content)
-      assert not labels.has_key(maybe_block.label)
       name = "__{slug}__{nonce}".format(slug=re.sub("[^A-Za-z0-9]", "_", maybe_block.label),
                                         nonce=random.randint(0,1024))
       inner = []
