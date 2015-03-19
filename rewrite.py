@@ -113,6 +113,11 @@ def replace_assignments(content, standard_indent="  "):
                                              variable=variable,
                                              label=label,
                                              inner=inner)
+    if name == variable:
+      # Jinghao: Mar 19, 2015
+      # remove the declaration: variable was assigned a value without declaration.
+      replacement = '\n'.join(replacement.split('\n')[2:])
+
     indented_replacement = []
     for line in replacement.splitlines():
       indented_replacement.append(indent + line)
@@ -162,9 +167,20 @@ ALTERNATIVE_START_PATTERN = re.compile(r"""^\s*or\s*{""")
 JAVA_BLOCK_TEMPLATE = """
 int {name} = 0;
 
+MaybeManager maybeManager;
+
 try {{
-{stdindent}{name} = getMaybeAlternative("{label}");
-}} catch (Exception e) {{ }};
+{stdindent}maybeManager = (MaybeManager) mContext.getSystemService(Context.MAYBE_SERVICE);
+}} catch (Exception e) {{
+{stdindent}Log.e("MaybeService-{label}", "Failed to get maybe service.", e);
+{stdindent}return;
+}};
+
+try {{
+{stdindent}{name} = maybeManager.getMaybeAlternative("{label}");
+}} catch (Exception e) {{
+{stdindent}Log.e("MaybeService-{label}", "Failed to get maybe alternative.", e);
+}};
 switch ({name}) {{
 {inner}
 }}
@@ -174,7 +190,14 @@ case {value}: {{{contents}{indent}break;
 }}
 """
 JAVA_LAST_BLOCK_ALTERNATIVE_TEMPLATE = """
-default: {{{contents}{indent}if ({name} != 0) {{ badMaybeAlternative("{label}", {name}); }}{indent}break;
+default: {{{contents}{indent}if ({name} != 0) {{{indent}\
+{stdindent}try {{{indent}\
+{stdindent}{stdindent}maybeManager.badMaybeAlternative("{label}", {name});{indent}\
+{stdindent}}} catch (Exception e) {{{indent}\
+{stdindent}{stdindent}Log.e("MaybeService-{label}", "Failed to report bad maybe alternative.", e);{indent}\
+{stdindent}}}{indent}\
+}}{indent}\
+break;
 }}
 """
 
@@ -250,6 +273,51 @@ def dump_statements(content, statements):
                    "statements": statement_list}
   return json.dumps(complete_dict, indent=4)
 
+
+# Jinghao, Mar 19, 2015
+# check the existence of class member "mContext"
+def check_context(content):
+  CONTEXT_PATTERN = re.compile(r"""Context\s+mContext""", re.VERBOSE)
+  if CONTEXT_PATTERN.search(content) is None:
+    print >>sys.stderr, "Please add a class member called \"mContext\" that holds an valid instance of your application's context."
+    return False
+  return True
+
+
+
+EXTRA_IMPORTS = [
+    'android.os.MaybeManager',
+    'android.util.Log',
+    'java.lang.Exception',
+    ]
+
+
+# Jinghao, Mar 19, 2014
+# make sure EXTRA_IMPORTS are imported
+def check_imports(content):
+  current_imports = set()
+  last_import = 0
+  lines = content.split('\n')
+  for i, line in enumerate(lines):
+    line = line.strip()
+    if line.startswith('import'):
+      current_imports.add(line[:-1].split()[1])
+      last_import = i
+
+  last_import += 1
+
+  extra_lines = []
+  for imp in EXTRA_IMPORTS:
+    if imp not in current_imports:
+      extra_lines.append('import %s;' % (imp))
+
+  if len(extra_lines) > 0:
+    return '%s\n%s\n%s' % ('\n'.join(lines[:last_import]), '\n'.join(extra_lines), '\n'.join(lines[last_import:]))
+  else:
+    return content
+
+
+
 if __name__=='__main__':
   parser = argparse.ArgumentParser(description='Rewrite maybe statements.')
   parser.add_argument('input_file', type=str,
@@ -260,8 +328,12 @@ if __name__=='__main__':
                       help="Dump metadata to standard output and exit.")
   args = parser.parse_args()
   basename, ext = os.path.splitext(args.input_file)
-  assert ext == '.java', "Input must be a Java file: %s" % (ext,)
   content = open(args.input_file, 'rU').read()
+
+  if not check_context(content):
+    sys.exit()
+
+  content = check_imports(content)
 
   if not args.no_metadata:
     statements = record_assignments(content)
