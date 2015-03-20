@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
-import re,random,json,argparse,os,sys,hashlib
+import re,random,json,argparse,os,sys,hashlib,subprocess
 from lib import find_block, clean_string
-import subprocess
 
 class MaybeAlternative(object):
   def __init__(self, value, offset, start, end, content):
@@ -347,7 +346,9 @@ if __name__=='__main__':
     print >>f, dump_statements(content, statements)
     f.flush()
     maybe_file = basename + '.maybe'
-    subprocess.call("bash ./import_meta_data.sh " + maybe_file + " &>/dev/null", shell=True)
+    absolutepath = os.path.dirname(os.path.abspath(__file__))
+    command = "bash " + absolutepath + "/import_meta_data.sh " + maybe_file + " &>/dev/null"
+    subprocess.call(command, shell=True)
     if args.only_metadata:
       sys.exit()
   
