@@ -277,7 +277,6 @@ def dump_statements(content, statements):
                    "statements": statement_list}
 
   s = json.dumps(complete_dict, indent=4)
-  subprocess.check_call('curl %s/maybe-api-v1/metadata/%s -X DELETE' % (MAYBE_SERVER_URL, package_name), stdout=DEVNULL, stderr=DEVNULL, shell=True)
   subprocess.check_call("""curl %s/maybe-api-v1/metadata -d '%s'""" % (MAYBE_SERVER_URL, s), stdout=DEVNULL, stderr=DEVNULL, shell=True)
   return s
 
