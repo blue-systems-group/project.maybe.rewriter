@@ -105,6 +105,7 @@ def record_assignments(content, statements=None):
   return statements
 
 def replace_assignments(content, standard_indent="  "):
+  package_name = get_package_name(content)
   def replace_assignment(match, content, labels):
     label = eval(content[match.start('label'):match.end('label')].strip())
     indent = match.group('indent')
@@ -114,6 +115,7 @@ def replace_assignments(content, standard_indent="  "):
     alternatives = content[match.start('alternatives'):match.end('alternatives')]
     inner = separator.join(["{indent}{name} = {a};".format(indent=standard_indent, name=name, a=a.strip()) for a in alternatives.split(',')])
     replacement = ASSIGNMENT_TEMPLATE.format(indent=indent,
+                                             package=package_name,
                                              variable=variable,
                                              label=label,
                                              inner=inner)
@@ -181,7 +183,7 @@ try {{
 }};
 
 try {{
-{stdindent}{name} = maybeManager.getMaybeAlternative("{label}");
+{stdindent}{name} = maybeManager.getMaybeAlternative("{package}", "{label}");
 }} catch (Exception e) {{
 {stdindent}Log.e("MaybeService-{label}", "Failed to get maybe alternative.", e);
 }};
@@ -196,7 +198,7 @@ case {value}: {{{contents}{indent}break;
 JAVA_LAST_BLOCK_ALTERNATIVE_TEMPLATE = """
 default: {{{contents}{indent}if ({name} != 0) {{{indent}\
 {stdindent}try {{{indent}\
-{stdindent}{stdindent}maybeManager.badMaybeAlternative("{label}", {name});{indent}\
+{stdindent}{stdindent}maybeManager.badMaybeAlternative("{package}", "{label}", {name});{indent}\
 {stdindent}}} catch (Exception e) {{{indent}\
 {stdindent}{stdindent}Log.e("MaybeService-{label}", "Failed to report bad maybe alternative.", e);{indent}\
 {stdindent}}}{indent}\
@@ -218,6 +220,7 @@ def record_blocks(content, statements=None):
 
 def replace_blocks(content, standard_indent="  "):
   labels = {}
+  package_name = get_package_name(content)
   
   while True:
     cleaned_content = clean_string(content)
@@ -239,6 +242,7 @@ def replace_blocks(content, standard_indent="  "):
                                                  indent=alternative_indent,
                                                  stdindent=standard_indent,
                                                  label=maybe_block.label,
+                                                 package=package_name,
                                                  name=name)
         indented_inner = []
         for line in unindented_inner.splitlines():
@@ -248,6 +252,7 @@ def replace_blocks(content, standard_indent="  "):
 
       reversed_inner = "".join(reversed(inner))
       replacement = JAVA_BLOCK_TEMPLATE.format(name=name, stdindent=standard_indent,
+                                               package=package_name,
                                                label=maybe_block.label,
                                                inner=reversed_inner)
       indented_replacement = []
@@ -263,11 +268,14 @@ def replace_blocks(content, standard_indent="  "):
 
 JAVA_PACKAGE_STATEMENT = re.compile(r"""(?m)^package\s+(?P<name>\S+?);""")
 
-def dump_statements(content, statements):
+def get_package_name(content):
   package_match = JAVA_PACKAGE_STATEMENT.search(content)
-  content_hash = hashlib.sha224(content).hexdigest()
   assert package_match, "No package name provided"
-  package_name = package_match.group('name').strip()
+  return package_match.group('name').strip()
+ 
+def dump_statements(content, statements):
+  content_hash = hashlib.sha224(content).hexdigest()
+  package_name = get_package_name(content)
   
   statement_list = []
   for statement in sorted(statements.values(), key=lambda s: s.start):
