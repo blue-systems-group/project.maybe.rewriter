@@ -3,6 +3,10 @@
 import re,random,json,argparse,os,sys,hashlib,subprocess
 from lib import find_block, clean_string
 
+
+MAYBE_SERVER_URL = "https://maybe.xcv58.me"
+DEVNULL = open(os.devnull, 'w')
+
 class MaybeAlternative(object):
   def __init__(self, value, offset, start, end, content):
     self.value = value
@@ -271,7 +275,11 @@ def dump_statements(content, statements):
   complete_dict = {"package": package_name,
                    "sha224_hash": content_hash,
                    "statements": statement_list}
-  return json.dumps(complete_dict, indent=4)
+
+  s = json.dumps(complete_dict, indent=4)
+  subprocess.check_call('curl %s/maybe-api-v1/metadata/%s -X DELETE' % (MAYBE_SERVER_URL, package_name), stdout=DEVNULL, stderr=DEVNULL, shell=True)
+  subprocess.check_call("""curl %s/maybe-api-v1/metadata -d '%s'""" % (MAYBE_SERVER_URL, s), stdout=DEVNULL, stderr=DEVNULL, shell=True)
+  return s
 
 
 # Jinghao, Mar 19, 2015
@@ -345,10 +353,6 @@ if __name__=='__main__':
       f = sys.stdout
     print >>f, dump_statements(content, statements)
     f.flush()
-    maybe_file = basename + '.maybe'
-    absolutepath = os.path.dirname(os.path.abspath(__file__))
-    command = "bash " + absolutepath + "/import_meta_data.sh " + maybe_file + " &>/dev/null"
-    subprocess.call(command, shell=True)
     if args.only_metadata:
       sys.exit()
   
