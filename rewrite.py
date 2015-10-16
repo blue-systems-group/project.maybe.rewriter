@@ -4,7 +4,7 @@ import re,random,json,argparse,os,sys,hashlib,subprocess
 from lib import find_block, clean_string
 
 
-MAYBE_SERVER_URL = "https://maybe.xcv58.me"
+MAYBE_SERVER_URL = "http://maybe.cse.buffalo.edu"
 DEVNULL = open(os.devnull, 'w')
 
 class MaybeAlternative(object):
